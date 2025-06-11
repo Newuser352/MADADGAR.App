@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MADADGAR App</string>
+    
+    <!-- Login and Signup Strings -->
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="phone_hint">Enter phone number</string>
+    <string name="login_with_phone">Login with Phone Number</string>
+    <string name="phone_verification">We\'ll send a verification code to this number</string>
+    <string name="create_account">Create Account</string>
+    <string name="already_have_account">Already have an account? Login</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="app_tagline">Share. Connect. Help.</string>
+    
+    <!-- Navigation -->
+    <string name="navigation_items">Items</string>
+    <string name="navigation_share_item">Share Item</string>
+    <string name="navigation_my_posts">My Posts</string>
+    <string name="navigation_account">Account</string>
+    <string name="navigation_categories">Categories</string>
+    
+    <!-- Main Dashboard Strings -->
+    <string name="items">Items</string>
+    <string name="categories">Categories</string>
+    <string name="share_item">Share Item</string>
+    <string name="my_posts">My Posts</string>
+    <string name="account">Account</string>
+    
+    <!-- Menu Items -->
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    
+    <!-- Filter & Search -->
+    <string name="filter_items">Filter items</string>
+    <string name="filter_category">Category: %s</string>
+    <string name="clear_all_filters">Clear All</string>
+    <string name="try_different_filters">Try different search terms or filters</string>
+    <string name="loading_items">Loading items...</string>
+    <string name="search_items">Search items</string>
+    
+    <!-- Categories -->
+    <string name="select_category">Select Category</string>
+    <string name="no_category_selected">No category selected</string>
+    <string name="food">Food</string>
+    <string name="non_food">Non-Food</string>
+    <string name="cooked_food">Cooked Food</string>
+    <string name="uncooked_food">Uncooked Food</string>
+    <string name="electronics">Electronics</string>
+    <string name="furniture">Furniture</string>
+    <string name="books">Books</string>
+    <string name="clothing">Clothing</string>
+    <string name="other">Other</string>
+    <string name="cancel">Cancel</string>
+    <string name="select">Select</string>
+    
+    <!-- Share Item -->
+    <string name="item_title">Item Title</string>
+    <string name="description">Description</string>
+    <string name="share">Share</string>
+    
+    <!-- Account -->
+    <string name="edit_profile">Edit Profile</string>
+    
+    <!-- Additional strings for fragments -->
+    <string name="search_categories">Search categories</string>
+    <string name="no_categories_available">No categories available</string>
+    <string name="items_description">Browse items shared by people in your community</string>
+    <string name="no_items_available">No items available</string>
+    <string name="my_posts_description">Manage your shared items</string>
+    <string name="empty_posts_image">Empty posts illustration</string>
+    <string name="no_posts_available">No posts available</string>
+    <string name="empty_posts_subtitle">Your shared items will appear here</string>
+    <string name="no_posts_yet">You haven\'t shared any items yet.</string>
+    <string name="share_an_item">Share an Item</string>
+    <string name="add_new_post">Add new post</string>
+    <string name="share_item_description">Share items with your community</string>
+    <string name="error_required">This field is required</string>
+    <string name="item_name">Item Name</string>
+    <string name="item_category">Item Category</string>
+    <string name="item_location">Item Location</string>
+    <string name="item_description">Item Description</string>
+    <string name="contact_number">Contact Number</string>
+    <string name="image_preview">Image Preview</string>
+    <string name="upload_image_placeholder">Upload an image</string>
+    <string name="expiry_timer">Expiry Timer</string>
+</resources>

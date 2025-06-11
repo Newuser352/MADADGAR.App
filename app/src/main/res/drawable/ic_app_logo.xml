@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="200"
+    android:viewportHeight="200">
+    
+    <!-- Circle background -->
+    <path
+        android:fillColor="@color/aston_green"
+        android:pathData="M100,100m-80,0a80,80 0,1 1,160 0a80,80 0,1 1,-160 0" />
+    
+    <!-- Inner circle -->
+    <path
+        android:fillColor="@color/white"
+        android:pathData="M100,100m-70,0a70,70 0,1 1,140 0a70,70 0,1 1,-140 0" />
+    
+    <!-- Accent circle -->
+    <path
+        android:fillColor="@color/aston_green"
+        android:pathData="M100,100m-15,0a15,15 0,1 1,30 0a15,15 0,1 1,-30 0" />
+</vector>
+

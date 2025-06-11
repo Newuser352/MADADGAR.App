@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Theme Colors -->
+    <color name="aston_green">#037A68</color>
+    <color name="primary_color">#E6E6FA</color>         <!-- Light Purple -->
+    <color name="secondary_color">#9370DB</color>       <!-- Medium Purple -->
+    <color name="text_color">#000000</color>           <!-- Black -->
+    <color name="hint_color">#757575</color>           <!-- Dark Gray -->
+    <color name="text_secondary">#757575</color>       <!-- Secondary text color -->
+    
+    <!-- Accent and Supporting Colors -->
+    <color name="accent_color">#9370DB</color>         <!-- Medium Purple -->
+    <color name="divider_color">#E0E0E0</color>        <!-- Light Gray -->
+    <color name="light_purple">#E6E6FA</color>         <!-- Light Purple (same as primary) -->
+    <color name="deep_purple">#9370DB</color>          <!-- Medium Purple (same as secondary) -->
+    
+    <!-- Navigation Colors -->
+    <color name="bottom_nav_background">#037A68</color>  <!-- Aston Green -->
+    <color name="bottom_nav_icon_unselected">#FFFFFF</color>  <!-- White -->
+    <color name="bottom_nav_text_unselected">#FFFFFF</color>  <!-- White -->
+    
+    <!-- Background Colors -->
+    <color name="background_light">#FFFFFF</color>     <!-- White -->
+    <color name="background_purple">#E6E6FA</color>    <!-- Light Purple -->
+    <color name="card_background">#FFFFFF</color>      <!-- White -->
+    
+    <!-- Button Colors -->
+    <color name="button_color">#037A68</color>         <!-- Aston Green -->
+    <color name="button_text_color">#000000</color>    <!-- Black -->
+    <color name="button_background">#037A68</color>    <!-- Aston Green -->
+    
+    <!-- Status Colors -->
+    <color name="error_color">#B00020</color>          <!-- Error Red -->
+    <color name="success_color">#4CAF50</color>        <!-- Success Green -->
+</resources>
