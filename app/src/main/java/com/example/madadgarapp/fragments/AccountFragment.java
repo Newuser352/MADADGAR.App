@@ -15,11 +15,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.example.madadgarapp.LoginActivity;
+import com.example.madadgarapp.AuthSelectionActivity;
 import com.example.madadgarapp.R;
+import com.example.madadgarapp.utils.AuthManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 /**
  * Fragment to display the user account page with options:
@@ -29,6 +35,7 @@ import com.google.android.material.card.MaterialCardView;
  * - REPORT PROBLEM
  * - LOGOUT
  */
+@AndroidEntryPoint
 public class AccountFragment extends Fragment {
 
     // UI Elements
@@ -228,15 +235,20 @@ public class AccountFragment extends Fragment {
 
     /**
      * Perform logout operation
-     * Clear user session and navigate to login screen
+     * Clear user session - MainActivity will handle navigation via state observation
      */
     private void logout() {
         try {
-            // In a real app, you would also clear user session data here
-            Intent intent = new Intent(getActivity(), LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            requireActivity().finish();
+            // Obtain AuthManager via ViewModelProvider
+            AuthManager authManager = new ViewModelProvider(this).get(AuthManager.class);
+            
+            // Sign out from the authentication system
+            // MainActivity observes auth state and will handle navigation
+            authManager.signOut();
+            
+            // Show success message
+            Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
+            
         } catch (Exception e) {
             Toast.makeText(getContext(), "Error during logout: " + e.getMessage(), 
                     Toast.LENGTH_SHORT).show();

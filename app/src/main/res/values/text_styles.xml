@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Display Text Styles -->
+    <style name="TextAppearance.App.DisplayLarge" parent="TextAppearance.MaterialComponents.Headline1">
+        <item name="android:textSize">48sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.DisplayMedium" parent="TextAppearance.MaterialComponents.Headline2">
+        <item name="android:textSize">36sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.DisplaySmall" parent="TextAppearance.MaterialComponents.Headline3">
+        <item name="android:textSize">28sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- Headline Text Styles -->
+    <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.HeadlineSmall" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- Title Text Styles -->
+    <style name="TextAppearance.App.TitleLarge" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.TitleMedium" parent="TextAppearance.MaterialComponents.Subtitle2">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.TitleSmall" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <!-- Body Text Styles -->
+    <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.BodySmall" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+    
+    <!-- Label Text Styles -->
+    <style name="TextAppearance.App.LabelLarge" parent="TextAppearance.MaterialComponents.Button">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.LabelMedium" parent="TextAppearance.MaterialComponents.Overline">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+    
+    <style name="TextAppearance.App.LabelSmall" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+</resources>
+

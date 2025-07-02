@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/image_my_post"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:contentDescription="@string/item_image"
+            android:scaleType="centerCrop"
+            android:background="@color/light_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/placeholder_image" />
+
+        <TextView
+            android:id="@+id/text_my_post_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/text_color"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toStartOf="@id/button_my_post_menu"
+            app:layout_constraintStart_toEndOf="@id/image_my_post"
+            app:layout_constraintTop_toTopOf="@id/image_my_post"
+            tools:text="Sample Item Title" />
+
+        <TextView
+            android:id="@+id/text_my_post_category"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/aston_green"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@id/text_my_post_title"
+            app:layout_constraintStart_toStartOf="@id/text_my_post_title"
+            app:layout_constraintTop_toBottomOf="@id/text_my_post_title"
+            tools:text="Electronics" />
+
+        <TextView
+            android:id="@+id/text_my_post_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/status_background"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/text_my_post_title"
+            app:layout_constraintTop_toBottomOf="@id/text_my_post_category"
+            tools:text="AVAILABLE" />
+
+        <TextView
+            android:id="@+id/text_my_post_timestamp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/hint_color"
+            android:textSize="11sp"
+            app:layout_constraintEnd_toEndOf="@id/text_my_post_title"
+            app:layout_constraintStart_toStartOf="@id/text_my_post_title"
+            app:layout_constraintTop_toBottomOf="@id/text_my_post_status"
+            tools:text="Posted 2 hours ago" />
+
+        <ImageButton
+            android:id="@+id/button_my_post_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/post_options"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_more"
+            app:tint="@color/hint_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/text_my_post_views"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@android:drawable/ic_menu_view"
+            android:drawablePadding="4dp"
+            android:textColor="@color/hint_color"
+            android:textSize="11sp"
+            android:gravity="center_vertical"
+            app:drawableTint="@color/hint_color"
+            app:layout_constraintBottom_toBottomOf="@id/image_my_post"
+            app:layout_constraintStart_toStartOf="@id/text_my_post_title"
+            tools:text="25 views" />
+
+        <TextView
+            android:id="@+id/text_my_post_interests"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:drawableStart="@android:drawable/ic_menu_send"
+            android:drawablePadding="4dp"
+            android:textColor="@color/hint_color"
+            android:textSize="11sp"
+            android:gravity="center_vertical"
+            app:drawableTint="@color/hint_color"
+            app:layout_constraintBottom_toBottomOf="@id/image_my_post"
+            app:layout_constraintStart_toEndOf="@id/text_my_post_views"
+            tools:text="3 interests" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>
+

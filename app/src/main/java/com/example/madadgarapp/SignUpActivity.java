@@ -2,153 +2,111 @@ package com.example.madadgarapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Patterns;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.lifecycle.ViewModelProvider;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
+import com.example.madadgarapp.utils.AuthManager;
+import dagger.hilt.android.AndroidEntryPoint;
 
-import java.util.regex.Pattern;
+@AndroidEntryPoint
+public class SignupActivity extends AppCompatActivity {
 
-public class SignUpActivity extends AppCompatActivity {
-
-    private TextInputLayout tilPhone, tilPassword, tilConfirmPassword;
-    private TextInputEditText etPhone, etPassword, etConfirmPassword;
-    private MaterialButton btnCreateAccount, btnLogin;
-
-    // Validation patterns
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^[0-9]{10,12}$");
-    private static final int MIN_PASSWORD_LENGTH = 6;
+    private static final String TAG = "SignupActivity";
+    private EditText emailInput;
+    private EditText passwordInput;
+    private MaterialButton btnSignup;
+    private AuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        // Initialize views
         initViews();
-        
-        // Set up click listeners
+        initAuthManager();
         setupClickListeners();
     }
 
     private void initViews() {
-        // TextInputLayouts
-        tilPhone = findViewById(R.id.til_phone);
-        tilPassword = findViewById(R.id.til_password);
-        tilConfirmPassword = findViewById(R.id.til_confirm_password);
+        emailInput = findViewById(R.id.input_email);
+        passwordInput = findViewById(R.id.input_password);
+        btnSignup = findViewById(R.id.btn_signup);
+    }
+
+    private void initAuthManager() {
+        authManager = new ViewModelProvider(this).get(AuthManager.class);
         
-        // EditTexts
-        etPhone = findViewById(R.id.et_phone);
-        etPassword = findViewById(R.id.et_password);
-        etConfirmPassword = findViewById(R.id.et_confirm_password);
-        
-        // Buttons
-        btnCreateAccount = findViewById(R.id.btn_create_account);
-        btnLogin = findViewById(R.id.btn_login);
+        // Observe authentication state
+        authManager.getAuthLiveData().observe(this, authState -> {
+            Log.d(TAG, "Auth state changed: " + authState.getClass().getSimpleName());
+            
+            if (authState instanceof AuthManager.AuthState.Loading) {
+                // Show loading state
+                btnSignup.setEnabled(false);
+                btnSignup.setText("Sending email...");
+            } else if (authState instanceof AuthManager.AuthState.Unauthenticated) {
+                // Reset UI to normal state - this is expected after signup
+                btnSignup.setEnabled(true);
+                btnSignup.setText("Sign Up");
+            } else if (authState instanceof AuthManager.AuthState.Error) {
+                // Handle error state
+                AuthManager.AuthState.Error errorState = (AuthManager.AuthState.Error) authState;
+                String message = errorState.getMessage() != null ? errorState.getMessage() : "Signup failed";
+                Log.e(TAG, "Signup error: " + message);
+
+                // Reset UI
+                btnSignup.setEnabled(true);
+                btnSignup.setText("Sign Up");
+                
+                // Show error message
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void setupClickListeners() {
-        // Create Account button click listener
-        btnCreateAccount.setOnClickListener(new View.OnClickListener() {
+        btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (validateInputs()) {
-                    // Here you would normally perform user registration
-                    // For now, just show a toast message
-                    Toast.makeText(SignUpActivity.this, "Account created successfully!", Toast.LENGTH_SHORT).show();
-                    
-                    // Navigate back to LoginActivity
-                    Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish(); // Close this activity
+                String email = emailInput.getText().toString().trim();
+                String password = passwordInput.getText().toString().trim();
+
+                if (email.isEmpty()) {
+                    Toast.makeText(SignupActivity.this, "Please enter your email address", Toast.LENGTH_SHORT).show();
+                } else if (!isValidEmail(email)) {
+                    Toast.makeText(SignupActivity.this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+                } else if (password.isEmpty()) {
+                    Toast.makeText(SignupActivity.this, "Please enter a password", Toast.LENGTH_SHORT).show();
+                } else if (password.length() < 6) {
+                    Toast.makeText(SignupActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Call signup method with email and password
+                    signUpWithEmailPassword(email, password);
                 }
             }
         });
-
-        // Login button click listener (already have an account)
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Navigate back to LoginActivity
-                // Since we might have come from LoginActivity, just finish this activity
-                finish();
-            }
-        });
     }
 
-    private boolean validateInputs() {
-        boolean isValid = true;
-        
-        // Validate Phone
-        if (!validatePhone()) {
-            isValid = false;
-        }
-        
-        // Validate Password
-        if (!validatePassword()) {
-            isValid = false;
-        }
-        
-        // Validate Confirm Password
-        if (!validateConfirmPassword()) {
-            isValid = false;
-        }
-        
-        return isValid;
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
-    
 
-    
-    private boolean validatePhone() {
-        String phone = etPhone.getText().toString().trim();
+    private void signUpWithEmailPassword(String email, String password) {
+        Log.d(TAG, "Attempting to sign up with email: " + email);
+        authManager.signUpWithEmailPassword(email, password);
         
-        if (TextUtils.isEmpty(phone)) {
-            tilPhone.setError("Phone number is required");
-            return false;
-        } else if (!PHONE_PATTERN.matcher(phone).matches()) {
-            tilPhone.setError("Please enter a valid phone number (10-12 digits)");
-            return false;
-        } else {
-            tilPhone.setError(null);
-            return true;
-        }
-    }
-    
-    private boolean validatePassword() {
-        String password = etPassword.getText().toString().trim();
+        // Show success message and navigate back
+        Toast.makeText(this, "Account created successfully! Please check your email for verification.", Toast.LENGTH_LONG).show();
         
-        if (TextUtils.isEmpty(password)) {
-            tilPassword.setError("Password is required");
-            return false;
-        } else if (password.length() < MIN_PASSWORD_LENGTH) {
-            tilPassword.setError("Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
-            return false;
-        } else {
-            tilPassword.setError(null);
-            return true;
-        }
-    }
-    
-    private boolean validateConfirmPassword() {
-        String password = etPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
-        
-        if (TextUtils.isEmpty(confirmPassword)) {
-            tilConfirmPassword.setError("Please confirm your password");
-            return false;
-        } else if (!password.equals(confirmPassword)) {
-            tilConfirmPassword.setError("Passwords do not match");
-            return false;
-        } else {
-            tilConfirmPassword.setError(null);
-            return true;
-        }
+        // Navigate back to login after a short delay
+        emailInput.postDelayed(() -> {
+            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }, 2000);
     }
 }
-

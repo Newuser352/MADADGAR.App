@@ -61,11 +61,11 @@
                     app:layout_constraintTop_toBottomOf="@id/image_profile" />
 
                 <TextView
-                    android:id="@+id/text_phone_number"
+                    android:id="@+id/text_email_address"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="+1 234 567 8900"
+                    android:text="user@example.com"
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -87,7 +87,7 @@
                     app:iconTint="@color/white"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/text_phone_number" />
+                    app:layout_constraintTop_toBottomOf="@id/text_email_address" />
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -267,150 +267,22 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Account Settings -->
-                <LinearLayout
-                    android:id="@+id/layout_account_settings"
+                <!-- Logout Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_logout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:layout_margin="16dp"
+                    android:padding="12dp"
+                    android:text="LOGOUT"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/error_color"
+                    app:cornerRadius="8dp"
+                    app:icon="@android:drawable/ic_menu_close_clear_cancel"
+                    app:iconTint="@color/white" />
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@drawable/baseline_person_24"
-                        app:tint="@color/aston_green" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Account Settings"
-                        android:textColor="@color/text_color"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-
-                <!-- Notifications -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_color" />
-
-                <LinearLayout
-                    android:id="@+id/layout_notifications"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@drawable/baseline_notifications_24"
-                        app:tint="@color/aston_green" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Notifications"
-                        android:textColor="@color/text_color"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-
-                <!-- Help & Support -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_color" />
-
-                <LinearLayout
-                    android:id="@+id/layout_help_support"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@drawable/baseline_help_24"
-                        app:tint="@color/aston_green" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Help &amp; Support"
-                        android:textColor="@color/text_color"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-
-                <!-- About -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/divider_color" />
-
-                <LinearLayout
-                    android:id="@+id/layout_about"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginStart="8dp"
-                        android:src="@drawable/baseline_info_24"
-                        app:tint="@color/aston_green" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="About"
-                        android:textColor="@color/text_color"
-                        android:textSize="16sp" />
-                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-        <!-- Logout Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_logout"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="24dp"
-            android:padding="12dp"
-            android:text="LOGOUT"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/error_color"
-            app:cornerRadius="8dp"
-            app:elevation="4dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/card_settings" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

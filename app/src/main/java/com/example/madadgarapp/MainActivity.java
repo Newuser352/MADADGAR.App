@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 import android.widget.FrameLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -25,13 +26,20 @@ import com.example.madadgarapp.fragments.ItemsFragment;
 import com.example.madadgarapp.ShareItemFragment;
 import com.example.madadgarapp.fragments.MyPostsFragment;
 import com.example.madadgarapp.fragments.AccountFragment;
+import com.example.madadgarapp.utils.AuthManager;
 
 import android.app.Dialog;
 import android.view.LayoutInflater;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import com.example.madadgarapp.utils.AuthManager;
+import dagger.hilt.android.AndroidEntryPoint;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
 
     private static final int BACK_PRESS_INTERVAL = 2000; // 2 seconds
@@ -52,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
     
     // Current fragment
     private Fragment activeFragment;
-    private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
+private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
+
+        private AuthManager authManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
         
         // Initialize views
         initViews();
+        // Initialize AuthManager ViewModel
+        authManager = new ViewModelProvider(this).get(AuthManager.class);
         
         // Setup toolbar
         setupToolbar();
@@ -94,8 +106,21 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        // Observe authentication state
+        authManager.getAuthLiveData().observe(this, new Observer<AuthManager.AuthState>() {
+            @Override
+            public void onChanged(AuthManager.AuthState authState) {
+                if (authState instanceof AuthManager.AuthState.Unauthenticated) {
+                    // Navigate to AuthSelectionActivity if unauthenticated
+                    Intent intent = new Intent(MainActivity.this, AuthSelectionActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+            }
+        });
     }
-    
+
     private void initViews() {
         try {
             toolbar = findViewById(R.id.toolbar);
@@ -378,26 +403,7 @@ public class MainActivity extends AppCompatActivity {
     
     private void updateToolbarTitle(String fragmentTag) {
         if (getSupportActionBar() != null) {
-            switch (fragmentTag) {
-                case "items":
-                    getSupportActionBar().setTitle(R.string.app_name);
-                    break;
-                case "categories":
-                    getSupportActionBar().setTitle(R.string.categories);
-                    break;
-                case "share_item":
-                    getSupportActionBar().setTitle(R.string.share_item);
-                    break;
-                case "my_posts":
-                    getSupportActionBar().setTitle(R.string.my_posts);
-                    break;
-                case "account":
-                    getSupportActionBar().setTitle(R.string.account);
-                    break;
-                default:
-                    getSupportActionBar().setTitle(R.string.app_name);
-                    break;
-            }
+            getSupportActionBar().setTitle(""); // Clear the toolbar title
         }
     }
     
@@ -641,13 +647,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void logout() {
         try {
-            // Clear any saved credentials or session data here
+            // Use the AuthManager to sign out
+            authManager.signOut();
             Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-            // Navigate to login activity
-            Intent intent = new Intent(this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+            // Navigation will be handled automatically by the auth state observer
         } catch (Exception e) {
             Toast.makeText(this, "Error during logout: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }

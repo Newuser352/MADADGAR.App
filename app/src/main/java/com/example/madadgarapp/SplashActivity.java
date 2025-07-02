@@ -37,8 +37,8 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public void run() {
                 // This method will be executed after the specified delay
-                // Launch the login activity
-                Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
+                // Launch the auth selection activity
+                Intent intent = new Intent(SplashActivity.this, AuthSelectionActivity.class);
                 startActivity(intent);
                 
                 // Close this activity to prevent going back to splash screen

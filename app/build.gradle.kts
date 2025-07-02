@@ -1,15 +1,20 @@
 plugins {
     alias(libs.plugins.android.application)
+    kotlin("android")
+    kotlin("plugin.serialization")
+    id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.madadgarapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.madadgarapp"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -29,7 +34,6 @@ android {
             )
         }
         debug {
-            applicationIdSuffix = ".debug"
             isDebuggable = true
         }
     }
@@ -49,13 +53,28 @@ android {
         viewBinding = true
     }
     
+    lint {
+        disable.add("NullSafeMutableLiveData")
+        abortOnError = false
+    }
+    
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
 dependencies {
+    // Core library desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
+    
     // AndroidX and Core libraries
     implementation(libs.appcompat)
     implementation(libs.activity)
@@ -74,6 +93,41 @@ dependencies {
     // Third-party libraries
     implementation(libs.countrycodepicker) // Country Code Picker for phone input
     implementation(libs.circleimageview)   // CircleImageView for profile pictures
+    implementation("com.github.bumptech.glide:glide:4.16.0") // Image loading library
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    
+    
+    // Activity and Fragment KTX for activity result API
+    implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    
+    // Credential Manager
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    
+    // Google Sign-In and Firebase Auth
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    
+    // Hilt for dependency injection
+    implementation("com.google.dagger:hilt-android:2.50")
+    ksp("com.google.dagger:hilt-android-compiler:2.50")
+    
+    // Supabase SDK
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.6.0")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.6.0")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:2.6.0")
+    implementation("io.github.jan-tennert.supabase:storage-kt:2.6.0")
+    
+    // Ktor for network requests (required by Supabase)
+    implementation("io.ktor:ktor-client-android:2.3.12")
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-utils:2.3.12")
+    
+    // Kotlinx Serialization (required by Supabase)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     
     // Testing dependencies
     testImplementation(libs.junit)

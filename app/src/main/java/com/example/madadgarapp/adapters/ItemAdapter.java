@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.madadgarapp.R;
 import com.example.madadgarapp.models.Item;
 
@@ -114,14 +117,17 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
             textItemDescription = itemView.findViewById(R.id.text_item_description);
         }
 
-        public void bind(final Item item, final OnItemClickListener listener) {
+public void bind(final Item item, final OnItemClickListener listener) {
             textItemTitle.setText(item.getTitle());
             textItemCategory.setText(item.getFullCategory());
             textItemLocation.setText(item.getLocation());
             textItemDescription.setText(item.getDescription());
             
-            // TODO: Load image using a library like Glide or Picasso
-            // Example: Glide.with(imageItem).load(item.getImageUrl()).into(imageItem);
+            // Load image using Glide
+            Glide.with(imageItem.getContext())
+                    .load(item.getImageUrl())
+                    .apply(new RequestOptions().transform(new RoundedCorners(16)))
+                    .into(imageItem);
             
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

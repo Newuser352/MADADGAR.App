@@ -145,5 +145,25 @@ public class Item {
         
         return matchesQuery && matchesCategory;
     }
-}
 
+    public String getOwner() {
+        return ownerId;
+    }
+
+    public String getContact() {
+        return contactNumber;
+    }
+
+    public long getTimestamp() {
+        return createdAt;
+    }
+
+    public long getExpiration() {
+        return expiryTime;
+    }
+
+    public String getCategory() {
+        return mainCategory + " > " + subCategory;
+    }
+
+}

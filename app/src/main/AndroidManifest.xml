@@ -2,10 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Internet permission will be needed for future backend integration -->
+    <!-- Required permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
 
     <application
+        android:name=".MADADGARApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -28,6 +31,18 @@
             </intent-filter>
         </activity>
         
+        <!-- Auth Selection Activity -->
+        <activity
+            android:name=".AuthSelectionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <!-- Email Auth Selection Activity -->
+        <activity
+            android:name=".EmailAuthSelectionActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <!-- Login Activity -->
         <activity
             android:name=".LoginActivity"
@@ -35,18 +50,51 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
             
-        <!-- Sign Up Activity -->
+        <!-- Signup Activity -->
         <activity
-            android:name=".SignUpActivity"
+            android:name=".SignupActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize" />
+            
+        <!-- WebView OAuth Activity -->
+        <activity
+            android:name=".WebViewOAuthActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
             
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MADADGARApp.NoActionBar">
+            
+            <!-- Handle Supabase email verification -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="crsqhxztqbfguylrgcnt.supabase.co"
+                    android:pathPrefix="/auth/v1/verify" />
+            </intent-filter>
+            
+            <!-- Handle Supabase OAuth callbacks -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="crsqhxztqbfguylrgcnt.supabase.co"
+                    android:pathPrefix="/auth/v1/callback" />
+            </intent-filter>
+            
+        </activity>
+        
+            
             
     </application>
 

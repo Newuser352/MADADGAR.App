@@ -1,5 +1,6 @@
 package com.example.madadgarapp.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.madadgarapp.R;
+import com.example.madadgarapp.activities.ItemDetailActivity;
 import com.example.madadgarapp.adapters.ItemAdapter;
 import com.example.madadgarapp.dialogs.CategoryDialogFragment;
 import com.example.madadgarapp.models.Item;
@@ -38,7 +40,6 @@ public class ItemsFragment extends Fragment {
     private RecyclerView rvItems;
     private TextInputLayout tilSearchItems;
     private TextInputEditText etSearchItems;
-    private TextView textItemsDescription;
     private ImageButton btnFilter;
     private LinearLayout emptyStateContainer;
     private TextView textEmptyItems;
@@ -92,7 +93,6 @@ public class ItemsFragment extends Fragment {
         textEmptyWithFilters = view.findViewById(R.id.text_empty_with_filters);
         tilSearchItems = view.findViewById(R.id.til_search_items);
         etSearchItems = view.findViewById(R.id.et_search_items);
-        textItemsDescription = view.findViewById(R.id.text_items_description);
         btnFilter = view.findViewById(R.id.btn_filter);
         progressItems = view.findViewById(R.id.progress_items);
         filterChipGroup = view.findViewById(R.id.filter_chip_group);
@@ -105,9 +105,20 @@ public class ItemsFragment extends Fragment {
         rvItems.setHasFixedSize(true);
         
         // Initialize the adapter with click listener
-        itemAdapter = new ItemAdapter(requireContext(), item -> {
-            // Handle item click - could navigate to detail view
-            Toast.makeText(getContext(), "Selected: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+itemAdapter = new ItemAdapter(requireContext(), item -> {
+            // Launch ItemDetailActivity on item click
+            Intent intent = new Intent(getContext(), ItemDetailActivity.class);
+            intent.putExtra("ITEM_ID", item.getId());
+            intent.putExtra("ITEM_TITLE", item.getTitle());
+            intent.putExtra("ITEM_DESCRIPTION", item.getDescription());
+            intent.putExtra("ITEM_CATEGORY", item.getCategory());
+            intent.putExtra("ITEM_SUBCATEGORY", item.getSubCategory());
+            intent.putExtra("ITEM_LOCATION", item.getLocation());
+            intent.putExtra("ITEM_CONTACT", item.getContact());
+            intent.putExtra("ITEM_USER", item.getOwner());
+            intent.putExtra("ITEM_TIMESTAMP", item.getTimestamp());
+            intent.putExtra("ITEM_EXPIRATION", item.getExpiration());
+            startActivity(intent);
         });
         
         rvItems.setAdapter(itemAdapter);

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bottom Navigation Style -->
+    <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_icon</item>
+        <item name="itemTextColor">@color/bottom_nav_text</item>
+        <item name="itemRippleColor">@color/bottom_nav_ripple</item>
+        <item name="itemIconSize">24dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:minHeight">72dp</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.App.BottomNavigation.Active</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.App.BottomNavigation.Inactive</item>
+        <item name="itemBackground">@drawable/bottom_nav_indicator</item>
+    </style>
+    
+    <!-- Bottom Navigation Text Styles -->
+    <style name="TextAppearance.App.BottomNavigation.Active" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/bottom_nav_text_selected</item>
+    </style>
+    
+    <style name="TextAppearance.App.BottomNavigation.Inactive" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/bottom_nav_text_unselected</item>
+    </style>
+</resources>

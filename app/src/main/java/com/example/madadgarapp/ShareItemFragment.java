@@ -74,6 +74,8 @@ public class ShareItemFragment extends Fragment {
     private TextView textExpiryValue;
     private TextView textMediaCount;
     private TextView textVideoStatus;
+    private RadioGroup radioGroupTimeUnit;
+    private RadioButton radioHours, radioDays;
     
     // Categories arrays
     private String[] foodSubcategories = {"Cooked Food", "Uncooked Food"};
@@ -84,6 +86,8 @@ public class ShareItemFragment extends Fragment {
     private Uri selectedVideoUri;
     private boolean isVideoSelected = false;
     private int expiryDays = 3; // Default expiry days
+    private int expiryHours = 6; // Default expiry hours
+    private boolean isHoursSelected = false; // Track current time unit
 
     public ShareItemFragment() {
         // Required empty public constructor
@@ -236,6 +240,11 @@ public class ShareItemFragment extends Fragment {
             sliderExpiry = view.findViewById(R.id.slider_expiry);
             textExpiryValue = view.findViewById(R.id.text_expiry_value);
             
+            // Time unit selection
+            radioGroupTimeUnit = view.findViewById(R.id.radio_group_time_unit);
+            radioHours = view.findViewById(R.id.radio_hours);
+            radioDays = view.findViewById(R.id.radio_days);
+            
             // TextInputLayouts
             tilItemName = view.findViewById(R.id.til_item_name);
             tilItemDescription = view.findViewById(R.id.til_item_description);
@@ -304,10 +313,33 @@ public class ShareItemFragment extends Fragment {
             }
         });
         
+        // Time unit radio group listener
+        radioGroupTimeUnit.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radio_hours) {
+                isHoursSelected = true;
+                // Switch to hours mode (1-48 hours)
+                sliderExpiry.setValueFrom(1);
+                sliderExpiry.setValueTo(48);
+                sliderExpiry.setValue(expiryHours);
+                updateExpiryText();
+            } else if (checkedId == R.id.radio_days) {
+                isHoursSelected = false;
+                // Switch to days mode (1-30 days)
+                sliderExpiry.setValueFrom(1);
+                sliderExpiry.setValueTo(30);
+                sliderExpiry.setValue(expiryDays);
+                updateExpiryText();
+            }
+        });
+        
         // Expiry slider listener
         sliderExpiry.addOnChangeListener((slider, value, fromUser) -> {
-            expiryDays = (int) value;
-            textExpiryValue.setText(expiryDays + " days until expiry");
+            if (isHoursSelected) {
+                expiryHours = (int) value;
+            } else {
+                expiryDays = (int) value;
+            }
+            updateExpiryText();
         });
         
         // Photo upload button
@@ -712,9 +744,14 @@ public class ShareItemFragment extends Fragment {
         }
         
         // Validate expiry for food items
-        if (radioFood.isChecked() && expiryDays <= 0) {
-            Toast.makeText(getContext(), "Please set a valid expiry time for food items", Toast.LENGTH_SHORT).show();
-            isValid = false;
+        if (radioFood.isChecked()) {
+            if (isHoursSelected && expiryHours <= 0) {
+                Toast.makeText(getContext(), "Please set a valid expiry time for food items", Toast.LENGTH_SHORT).show();
+                isValid = false;
+            } else if (!isHoursSelected && expiryDays <= 0) {
+                Toast.makeText(getContext(), "Please set a valid expiry time for food items", Toast.LENGTH_SHORT).show();
+                isValid = false;
+            }
         }
         
         // Validate location
@@ -880,6 +917,19 @@ public class ShareItemFragment extends Fragment {
             Log.d(TAG, "clearForm: Form cleared successfully");
         } catch (Exception e) {
             Log.e(TAG, "clearForm: Error clearing form", e);
+        }
+    }
+    
+    /**
+     * Updates the expiry text based on the current time unit selection
+     */
+    private void updateExpiryText() {
+        if (textExpiryValue != null) {
+            if (isHoursSelected) {
+                textExpiryValue.setText(expiryHours + " hours until expiry");
+            } else {
+                textExpiryValue.setText(expiryDays + " days until expiry");
+            }
         }
     }
 }

@@ -4,6 +4,7 @@
     
     <!-- Login and Signup Strings -->
     <string name="login">Login</string>
+    <string name="sign_in_to_continue">Sign in to continue</string>
     <string name="signup">Sign Up</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
@@ -13,7 +14,10 @@
     <string name="phone_number">Phone Number</string>
     <string name="phone_hint">Enter phone number</string>
     <string name="login_with_phone">Login with Phone Number</string>
+    <string name="login_with_email">Login with your email address</string>
     <string name="phone_verification">We\'ll send a verification code to this number</string>
+    <string name="email_hint">Enter your email address</string>
+    <string name="email_verification">We\'ll send a verification link to this email</string>
     <string name="create_account">Create Account</string>
     <string name="already_have_account">Already have an account? Login</string>
     <string name="dont_have_account">Don\'t have an account? Sign Up</string>
@@ -21,7 +25,7 @@
     <string name="app_tagline">Share. Connect. Help.</string>
     
     <!-- Navigation -->
-    <string name="navigation_items">Items</string>
+    <string name="navigation_items">Home</string>
     <string name="navigation_share_item">Share Item</string>
     <string name="navigation_my_posts">My Posts</string>
     <string name="navigation_account">Account</string>
@@ -92,4 +96,84 @@
     <string name="image_preview">Image Preview</string>
     <string name="upload_image_placeholder">Upload an image</string>
     <string name="expiry_timer">Expiry Timer</string>
+    
+    <!-- Item Detail Activity -->
+    <string name="item_image">Item Image</string>
+    <string name="contact_information">Contact Information</string>
+    <string name="contact_owner">Contact Owner</string>
+    <string name="call">Call</string>
+    <string name="send_email">Send Email</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="location">Location</string>
+    <string name="category">Category</string>
+    <string name="posted_on">Posted on</string>
+    <string name="share_item_text">Share Item</string>
+    
+    <!-- My Posts Fragment -->
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="status_available">Available</string>
+    <string name="status_expired">Expired</string>
+    <string name="status_shared">Shared</string>
+    <string name="post_options">Post options</string>
+    
+    <!-- Email Verification -->
+    <string name="verify_email">Verify Your Email</string>
+    <string name="email_sent_to">We\'ve sent a verification email to:</string>
+    <string name="check_verification">Check Verification</string>
+    <string name="resend_email">Resend Email</string>
+    <string name="back_to_login">Back to Login</string>
+    <string name="email_verification_steps">Please follow these steps:\n\n1. Check your email inbox (and spam folder)\n2. Click the verification link in the email\n3. Return to this app and tap \'Check Verification\'\n\nNote: The verification link may show \'localhost refused to connect\' - this is normal for mobile apps. Just return to the app after clicking the link.</string>
+    
+    <!-- Google Authentication -->
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="signup_with_google">Sign up with Google</string>
+    <string name="or">OR</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_up_with_google">Sign up with Google</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="not_signed_in">Not signed in</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="signing_out">Signing out…</string>
+    <string name="sign_in_success">Signed in successfully</string>
+    <string name="sign_out_success">Signed out successfully</string>
+    <string name="sign_in_error">Sign in failed. Please try again.</string>
+    <string name="sign_out_error">Sign out failed. Please try again.</string>
+    <string name="google_play_services_updating">Google Play services is being updated…</string>
+    <string name="google_play_services_unavailable">Google Play services is not available</string>
+    
+    <!-- Auth Selection Activity -->
+    <string name="welcome_to_app">Welcome to MADADGAR</string>
+    <string name="choose_login_method">Choose how you\'d like to get started</string>
+    <string name="continue_with_email">Continue with Email</string>
+    <string name="terms_and_privacy">By continuing, you agree to our Terms of Service and Privacy Policy</string>
+    
+    <!-- Email Input Activity -->
+    <string name="enter_your_email">Enter Your Email</string>
+    <string name="otp_will_be_sent">We\'ll send a 6-digit code to verify your email</string>
+    <string name="send_otp">Send OTP</string>
+    
+    <!-- OTP Verification Activity -->
+    <string name="verify_otp">Verify OTP</string>
+    <string name="otp_sent_to">Enter the 6-digit code sent to</string>
+    <string name="resend_otp">Resend OTP</string>
+    
+    <!-- Google Sign-In Configuration -->
+    <!-- IMPORTANT: This MUST be a Web Application Client ID, NOT an Android Client ID -->
+    <!-- REPLACE the value below with your Web Application Client ID from Google Cloud Console -->
+    <!-- Go to console.cloud.google.com > APIs & Services > Credentials > Create Web Application client -->
+    <!-- Using the correct Web Client ID from google-services.json (client_type: 3) -->
+    <string name="google_web_client_id">414328060193-e80d21int20e8ldsj8diq71fkcah1lih.apps.googleusercontent.com</string>
+    
+    <!-- Google Sign-In Strings -->
+    <string name="sign_in_failed">Sign in failed</string>
+    <string name="sign_in_cancelled">Sign in was cancelled</string>
+    <string name="sign_in_required">Sign in is required</string>
+    <string name="auth_failed">Authentication failed</string>
+    <string name="sign_in_successful">Sign in successful</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="network_error">Network error occurred. Please check your connection.</string>
+    <string name="invalid_credentials">Invalid credentials. Please try again.</string>
+    <string name="google_play_services_error">Google Play services error. Please update Google Play services.</string>
+    <string name="signed_in_as">Signed in as %s</string>
 </resources>

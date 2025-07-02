@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme with Material Design for API 27+ -->
+    <style name="Base.Theme.MADADGARApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Color theming -->
+        <item name="colorPrimary">@color/primary_color</item>
+        <item name="colorPrimaryVariant">@color/dark_accent</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent_color</item>
+        <item name="colorSecondaryVariant">@color/dark_accent</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:colorBackground">@color/background_light</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorError">@color/error_color</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorOnBackground">@color/text_color</item>
+        <item name="colorOnSurface">@color/text_color</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        
+        <!-- Material Design typography -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.App.DisplayLarge</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.App.DisplayMedium</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.App.DisplaySmall</item>
+        <item name="textAppearanceHeadline4">@style/TextAppearance.App.HeadlineLarge</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.App.HeadlineMedium</item>
+        <item name="textAppearanceHeadline6">@style/TextAppearance.App.HeadlineSmall</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.App.TitleLarge</item>
+        <item name="textAppearanceSubtitle2">@style/TextAppearance.App.TitleMedium</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.App.BodyLarge</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.App.BodyMedium</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.App.BodySmall</item>
+        <item name="textAppearanceButton">@style/TextAppearance.App.LabelLarge</item>
+        
+        <!-- Component styles -->
+        <item name="materialCardViewStyle">@style/Widget.App.CardView</item>
+        <item name="materialButtonStyle">@style/Widget.App.Button</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.App.Button.Outlined</item>
+    </style>
+</resources>
+
