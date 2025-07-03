@@ -645,6 +645,21 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
         return 0; // Default to first position
     }
 
+    /**
+     * Public method to refresh the items list in ItemsFragment
+     * Called when a new item is shared to update the dashboard
+     */
+    public void refreshItemsList() {
+        try {
+            if (itemsFragment != null && itemsFragment.isAdded()) {
+                itemsFragment.refreshItems();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error refreshing items: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void logout() {
         try {
             // Use the AuthManager to sign out

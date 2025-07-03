@@ -30,6 +30,8 @@ import java.util.Map;
 import android.media.MediaPlayer;
 import android.view.ViewGroup.LayoutParams;
 import com.google.android.material.slider.Slider;
+import com.example.madadgarapp.repository.SupabaseItemBridge;
+import com.example.madadgarapp.models.SupabaseItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -835,26 +837,230 @@ public class ShareItemFragment extends Fragment {
             return;
         }
         
-        try {
-            // In a real app, this would send data to a server or database
-            
-            // Show success message
+        // Check if user is authenticated
+        if (!com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.isAuthenticated()) {
+            Log.w(TAG, "submitForm: User not authenticated");
             if (getContext() != null) {
-                Toast.makeText(getContext(), "Item shared successfully!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Please sign in to share items", Toast.LENGTH_SHORT).show();
             }
+            return;
+        }
+        
+        try {
+            // Disable button and show loading state
+            btnShareItem.setEnabled(false);
+            btnShareItem.setText("Sharing Item...");
             
-            // Clear form
-            clearForm();
+            // Submit to Supabase using the repository bridge
+            submitCompleteItem();
             
-            Log.d(TAG, "submitForm: Form submitted successfully");
+            Log.d(TAG, "submitForm: Form submission initiated");
         } catch (Exception e) {
             Log.e(TAG, "submitForm: Error submitting form", e);
+            resetButtonState();
             if (getContext() != null) {
                 Toast.makeText(getContext(), "Error submitting form: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
     
+    /**
+     * Submit the form data to Supabase
+     */
+    private void submitToSupabase() {
+        // Run in background thread
+        new Thread(() -> {
+            try {
+                Log.d(TAG, "submitToSupabase: Starting Supabase submission");
+                
+                // Get current user
+                var currentUser = com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
+                if (currentUser == null) {
+                    throw new Exception("User not authenticated");
+                }
+                String userId = currentUser.getId();
+                
+                // Create repository instance
+                com.example.madadgarapp.repository.ItemRepository repository = new com.example.madadgarapp.repository.ItemRepository();
+                
+                // Step 1: Upload images if any
+                java.util.List<String> imageUrls = new java.util.ArrayList<>();
+                if (!selectedPhotoUris.isEmpty()) {
+                    Log.d(TAG, "submitToSupabase: Uploading " + selectedPhotoUris.size() + " images");
+                    
+                    // Note: This is a simplified approach. In production, you might want to use Kotlin coroutines
+                    // For now, we'll use a blocking approach with proper error handling
+                    try {
+                        // Since we're in Java and the repository uses Kotlin coroutines,
+                        // we'll need to create a bridge. For now, let's show the structure
+                        Log.d(TAG, "Image upload would happen here");
+                        // imageUrls = uploadImagesSync(repository, selectedPhotoUris, userId);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error uploading images: " + e.getMessage());
+                        throw e;
+                    }
+                }
+                
+                // Step 2: Upload video if any
+                String videoUrl = null;
+                if (isVideoSelected && selectedVideoUri != null) {
+                    Log.d(TAG, "submitToSupabase: Uploading video");
+                    try {
+                        // videoUrl = uploadVideoSync(repository, selectedVideoUri, userId);
+                        Log.d(TAG, "Video upload would happen here");
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error uploading video: " + e.getMessage());
+                        throw e;
+                    }
+                }
+                
+                // Step 3: Create item data
+                String itemName = etItemName.getText().toString().trim();
+                String itemDescription = etItemDescription.getText().toString().trim();
+                String subcategory = dropdownSubcategory.getText().toString().trim();
+                String location = etItemLocation.getText().toString().trim();
+                String mainContact = countryCodePicker.getFullNumber();
+                String contact1 = etContact1.getText().toString().trim();
+                String contact2 = etContact2.getText().toString().trim();
+                
+                // Determine category
+                String mainCategory;
+                String expiryTime = null;
+                if (radioFood.isChecked()) {
+                    mainCategory = "Food";
+                    // Calculate expiry time
+                    long currentTime = System.currentTimeMillis();
+                    long expiryMillis;
+                    if (isHoursSelected) {
+                        expiryMillis = currentTime + (expiryHours * 60 * 60 * 1000L);
+                    } else {
+                        expiryMillis = currentTime + (expiryDays * 24 * 60 * 60 * 1000L);
+                    }
+                    expiryTime = java.time.Instant.ofEpochMilli(expiryMillis).toString();
+                } else {
+                    mainCategory = "Non-Food";
+                }
+                
+                // For now, we'll create a simplified version since we need Kotlin coroutines
+                // The actual implementation would use the repository to create the item
+                
+                Log.d(TAG, "submitToSupabase: Item data prepared");
+                Log.d(TAG, "Title: " + itemName);
+                Log.d(TAG, "Category: " + mainCategory + " > " + subcategory);
+                Log.d(TAG, "Location: " + location);
+                Log.d(TAG, "Images: " + selectedPhotoUris.size());
+                Log.d(TAG, "Video: " + (isVideoSelected ? "Yes" : "No"));
+                
+                // Switch back to main thread for UI updates
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        try {
+                            // For now, show success (in production, this would be after actual Supabase call)
+                            Toast.makeText(getContext(), "Item shared successfully!", Toast.LENGTH_SHORT).show();
+                            
+                            // Clear form and reset button
+                            clearForm();
+                            resetButtonState();
+                            
+                            Log.d(TAG, "submitToSupabase: Form submitted successfully");
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error in UI update", e);
+                        }
+                    });
+                }
+                
+            } catch (Exception e) {
+                Log.e(TAG, "submitToSupabase: Error in Supabase submission", e);
+                
+                // Switch back to main thread for error handling
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        resetButtonState();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "Error sharing item: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * Submit the complete item to Supabase using the repository bridge
+     */
+    private void submitCompleteItem() {
+        // Context must be available to proceed
+        Context context = getContext();
+        if (context == null) return;
+
+        // Get current user ID
+        var currentUser = com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(context, "Please sign in to share items", Toast.LENGTH_SHORT).show();
+            resetButtonState();
+            return;
+        }
+        String userId = currentUser.getId();
+
+        // Get required fields
+        String itemName = etItemName.getText().toString().trim();
+        String itemDescription = etItemDescription.getText().toString().trim();
+        String subcategory = dropdownSubcategory.getText().toString().trim();
+        String location = etItemLocation.getText().toString().trim();
+        String mainContact = countryCodePicker.getFullNumber();
+        String contact1 = etContact1.getText().toString().trim();
+        String contact2 = etContact2.getText().toString().trim();
+
+        // Determine category
+        String mainCategory = radioFood.isChecked() ? "Food" : "Non-Food";
+        String expiryTime = null;
+        if (radioFood.isChecked()) {
+            long currentTime = System.currentTimeMillis();
+            long expiryMillis = isHoursSelected ?
+                    currentTime + (expiryHours * 60 * 60 * 1000L) :
+                    currentTime + (expiryDays * 24 * 60 * 60 * 1000L);
+            expiryTime = java.time.Instant.ofEpochMilli(expiryMillis).toString();
+        }
+
+        SupabaseItemBridge bridge = new SupabaseItemBridge();
+        bridge.createCompleteItem(context,
+                itemName,
+                itemDescription,
+                mainCategory,
+                subcategory,
+                location,
+                mainContact,
+                contact1,
+                contact2,
+                userId,
+                expiryTime,
+                selectedPhotoUris.isEmpty() ? null : selectedPhotoUris,
+                isVideoSelected ? selectedVideoUri : null,
+                new SupabaseItemBridge.RepositoryCallback<SupabaseItem>() {
+                    @Override
+                    public void onSuccess(SupabaseItem result) {
+                        Toast.makeText(context, "Item successfully shared to Supabase!", Toast.LENGTH_SHORT).show();
+                        clearForm();
+                        resetButtonState();
+                        
+                        // Refresh the items list to show the newly shared item
+                        if (getActivity() instanceof MainActivity) {
+                            ((MainActivity) getActivity()).refreshItemsList();
+                        }
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Toast.makeText(context, "Error sharing item: " + error, Toast.LENGTH_SHORT).show();
+                        resetButtonState();
+                    }
+                }
+        );
+    }
+    
+    /**
+     * Reset the button state back to normal
+     */
     private void resetButtonState() {
         // Check fragment attachment state before proceeding
         if (!isAdded() || getActivity() == null) {

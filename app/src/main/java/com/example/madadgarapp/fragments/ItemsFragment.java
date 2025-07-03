@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.List;
 import com.example.madadgarapp.R;
 import com.example.madadgarapp.dialogs.CategoryDialogFragment;
+import com.example.madadgarapp.repository.SupabaseItemBridge;
+import com.example.madadgarapp.models.SupabaseItem;
 
 public class ItemsFragment extends Fragment {
     private RecyclerView rvItems;
@@ -174,42 +176,83 @@ itemAdapter = new ItemAdapter(requireContext(), item -> {
     private void loadItems() {
         showLoading(true);
         
-        // TODO: Replace this with actual Firebase or API data loading
-        // For demo purposes, we'll create some sample items
-        new Handler().postDelayed(() -> {
-            List<Item> items = createSampleItems();
-            itemAdapter.setItems(items);
-            applyFilters();
-            showLoading(false);
-        }, 1000); // Simulate network delay
+        // Load items from Supabase
+        SupabaseItemBridge bridge = new SupabaseItemBridge();
+        bridge.getActiveItems(50, 0, new SupabaseItemBridge.RepositoryCallback<List<SupabaseItem>>() {
+            @Override
+            public void onSuccess(List<SupabaseItem> supabaseItems) {
+                // Convert SupabaseItems to Items for adapter
+                List<Item> items = new ArrayList<>();
+                for (SupabaseItem supabaseItem : supabaseItems) {
+                    Item item = convertSupabaseItemToItem(supabaseItem);
+                    items.add(item);
+                }
+                
+                itemAdapter.setItems(items);
+                applyFilters();
+                showLoading(false);
+                
+                if (items.isEmpty()) {
+                    Toast.makeText(getContext(), "No items found. Share your first item!", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onError(String error) {
+                showLoading(false);
+                Toast.makeText(getContext(), "Error loading items: " + error, Toast.LENGTH_SHORT).show();
+                
+                // Show empty list on error
+                itemAdapter.setItems(new ArrayList<>());
+                updateEmptyState();
+            }
+        });
     }
     
-    private List<Item> createSampleItems() {
-        List<Item> items = new ArrayList<>();
+    /**
+     * Convert SupabaseItem to Item for adapter compatibility
+     */
+    private Item convertSupabaseItemToItem(SupabaseItem supabaseItem) {
+        // Parse timestamps
+        long createdAt = parseTimestamp(supabaseItem.getCreatedAt());
+        long expiresAt = parseTimestamp(supabaseItem.getExpiresAt());
         
-        // Food items
-        items.add(new Item("1", "Homemade Biryani", "Freshly made biryani, enough for 3-4 people", 
-                "Food", "Cooked Food", "Main Campus", "+923001234567", 
-                null, "user1", System.currentTimeMillis(), System.currentTimeMillis() + 86400000));
-                
-        items.add(new Item("2", "Fresh Vegetables", "Bundle of fresh vegetables from local market", 
-                "Food", "Uncooked Food", "North Campus", "+923001234568", 
-                null, "user2", System.currentTimeMillis(), System.currentTimeMillis() + 172800000));
-                
-        // Non-Food items
-        items.add(new Item("3", "Engineering Textbooks", "Set of engineering textbooks for first year", 
-                "Non-Food", "Books", "South Campus", "+923001234569", 
-                null, "user3", System.currentTimeMillis(), System.currentTimeMillis() + 604800000));
-                
-        items.add(new Item("4", "Study Desk", "Wooden study desk in good condition", 
-                "Non-Food", "Furniture", "East Campus", "+923001234570", 
-                null, "user4", System.currentTimeMillis(), System.currentTimeMillis() + 1209600000));
-                
-        items.add(new Item("5", "Laptop Charger", "HP laptop charger, compatible with most models", 
-                "Non-Food", "Electronics", "West Campus", "+923001234571", 
-                null, "user5", System.currentTimeMillis(), System.currentTimeMillis() + 259200000));
-                
-        return items;
+        // Get the first image URL if available
+        String imageUrl = null;
+        if (supabaseItem.getImageUrls() != null && !supabaseItem.getImageUrls().isEmpty()) {
+            imageUrl = supabaseItem.getImageUrls().get(0);
+        }
+        
+        return new Item(
+            supabaseItem.getId(),
+            supabaseItem.getTitle(),
+            supabaseItem.getDescription(),
+            supabaseItem.getMainCategory(),
+            supabaseItem.getSubCategory(),
+            supabaseItem.getLocation(),
+            supabaseItem.getContactNumber(),
+            imageUrl,
+            supabaseItem.getOwnerId(),
+            createdAt,
+            expiresAt
+        );
+    }
+    
+    /**
+     * Parse timestamp string to long
+     */
+    private long parseTimestamp(String timestamp) {
+        if (timestamp == null || timestamp.isEmpty()) {
+            return System.currentTimeMillis();
+        }
+        
+        try {
+            // Parse ISO timestamp
+            return java.time.Instant.parse(timestamp).toEpochMilli();
+        } catch (Exception e) {
+            // Fallback to current time if parsing fails
+            return System.currentTimeMillis();
+        }
     }
     
     private void applyFilters() {
