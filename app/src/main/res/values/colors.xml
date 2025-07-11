@@ -57,9 +57,9 @@
     <color name="google_green">#34A853</color>
     <color name="bottom_nav_surface">#FFFFFF</color>
     <color name="bottom_nav_icon_selected">#00796B</color>
-    <color name="bottom_nav_icon_unselected">#78909C</color>
+    <color name="bottom_nav_icon_unselected">#9E9E9E</color>
     <color name="bottom_nav_text_selected">#00796B</color>
-    <color name="bottom_nav_text_unselected">#78909C</color>
+    <color name="bottom_nav_text_unselected">#9E9E9E</color>
     <color name="bottom_nav_indicator">#E0F2F1</color>
     <color name="bottom_nav_ripple">#26FFFFFF</color>
     

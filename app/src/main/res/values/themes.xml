@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme with Material Design -->
-    <style name="Base.Theme.MADADGARApp" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.MADADGARApp" parent="Theme.Material3.Light.NoActionBar">
         <!-- Color theming -->
         <item name="colorPrimary">@color/primary_color</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>

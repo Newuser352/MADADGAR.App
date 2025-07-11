@@ -26,7 +26,8 @@
             android:layout_height="?attr/actionBarSize"
             app:title="@string/app_name"
             app:titleTextColor="@color/bottom_nav_text"
-            app:titleTextAppearance="@style/TextAppearance.App.TitleLarge" />
+            app:titleTextAppearance="@style/TextAppearance.App.TitleLarge"
+            app:navigationIcon="@null" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -37,7 +38,7 @@
         android:layout_height="match_parent"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="0dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="80dp"
         android:animateLayoutChanges="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
@@ -48,29 +49,22 @@
         android:layout_height="match_parent"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        android:layout_marginBottom="72dp"
+        android:layout_marginBottom="80dp"
         android:animateLayoutChanges="true"
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
+        style="@style/App.BottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="0dp"
-        android:layout_marginStart="0dp"
-        android:layout_marginEnd="0dp"
-        style="@style/Widget.App.BottomNavigationView"
-        android:background="@drawable/bottom_nav_background"
-        app:itemIconTint="@color/bottom_nav_icon"
-        app:itemTextColor="@color/bottom_nav_text"
-        app:itemRippleColor="@color/bottom_nav_ripple"
-        app:labelVisibilityMode="labeled"
-        app:elevation="16dp"
-        android:translationZ="16dp"
-        android:clipToPadding="false"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

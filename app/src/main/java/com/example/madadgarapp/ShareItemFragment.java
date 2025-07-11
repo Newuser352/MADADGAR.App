@@ -32,6 +32,16 @@ import android.view.ViewGroup.LayoutParams;
 import com.google.android.material.slider.Slider;
 import com.example.madadgarapp.repository.SupabaseItemBridge;
 import com.example.madadgarapp.models.SupabaseItem;
+import com.example.madadgarapp.utils.LocationUtils;
+import com.example.madadgarapp.utils.NotificationManager;
+import com.example.madadgarapp.fragments.LocationPickerFragment;
+import android.Manifest;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+import android.content.pm.PackageManager;
+
+
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -90,6 +100,13 @@ public class ShareItemFragment extends Fragment {
     private int expiryDays = 3; // Default expiry days
     private int expiryHours = 6; // Default expiry hours
     private boolean isHoursSelected = false; // Track current time unit
+    
+    // Location-related variables
+    private LocationUtils.Coordinates selectedCoordinates;
+    private MaterialButton btnSelectLocation;
+    
+    // Location permission launcher
+    private ActivityResultLauncher<String[]> locationPermissionLauncher;
 
     public ShareItemFragment() {
         // Required empty public constructor
@@ -112,6 +129,9 @@ public class ShareItemFragment extends Fragment {
         Log.d(TAG, "onViewCreated: Starting fragment initialization");
         
         try {
+            // Initialize location permission launcher
+            initLocationPermissionLauncher();
+            
             // Initialize views
             initViews(view);
             
@@ -125,7 +145,7 @@ public class ShareItemFragment extends Fragment {
             setupSubcategoryDropdown(false);
             
             // Set up country code picker
-            setupCountryCodePicker();
+            // Country code picker removed
             
             Log.d(TAG, "onViewCreated: Fragment successfully initialized");
         } catch (Exception e) {
@@ -281,6 +301,7 @@ public class ShareItemFragment extends Fragment {
             btnUploadVideo = view.findViewById(R.id.btn_upload_video);
             btnClearPhotos = view.findViewById(R.id.btn_clear_photos);
             btnClearVideo = view.findViewById(R.id.btn_clear_video);
+            btnSelectLocation = view.findViewById(R.id.btn_select_location);
             
             // Verify all critical views are initialized
             if (etContactNumber == null || tilContactNumber == null) {
@@ -344,6 +365,11 @@ public class ShareItemFragment extends Fragment {
             updateExpiryText();
         });
         
+        // Expiry info button
+        if (getView() != null) {
+            getView().findViewById(R.id.btn_expiry_info).setOnClickListener(v -> showExpiryInfo());
+        }
+        
         // Photo upload button
         btnUploadPhoto.setOnClickListener(v -> {
             if (isAdded() && selectedPhotoUris.size() < MAX_PHOTO_COUNT) {
@@ -369,6 +395,13 @@ public class ShareItemFragment extends Fragment {
         btnClearVideo.setOnClickListener(v -> {
             clearVideo();
         });
+        
+        // Location selection button
+        if (btnSelectLocation != null) {
+            btnSelectLocation.setOnClickListener(v -> {
+                openLocationPicker();
+            });
+        }
         
         // Play video click listener
         iconPlayVideo.setOnClickListener(v -> {
@@ -765,38 +798,6 @@ public class ShareItemFragment extends Fragment {
             tilItemLocation.setError(null);
         }
         
-        // Validate main phone number - using CountryCodePicker validation
-        if (countryCodePicker != null && etContactNumber != null) {
-            String contactNumber = etContactNumber.getText().toString().trim();
-            Log.d(TAG, "validateForm: Validating main contact: " + contactNumber);
-            
-            if (!contactNumber.isEmpty()) {
-                try {
-                    boolean isValid_num = countryCodePicker.isValidFullNumber();
-                    Log.d(TAG, "validateForm: Main contact validation result: " + isValid_num);
-                    
-                    if (!isValid_num) {
-                        tilContactNumber.setError("Please enter a valid main contact number");
-                        isValid = false;
-                    } else {
-                        tilContactNumber.setError(null);
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "validateForm: Error validating main contact number", e);
-                    tilContactNumber.setError("Error validating number");
-                    isValid = false;
-                }
-            } else {
-                Log.d(TAG, "validateForm: Main contact number is empty");
-                tilContactNumber.setError("Main contact number is required");
-                isValid = false;
-            }
-        } else {
-            Log.e(TAG, "validateForm: CountryCodePicker or etContactNumber is null");
-            tilContactNumber.setError("Contact field initialization error");
-            isValid = false;
-        }
-        
         // Validate primary contact (optional but must be valid if provided)
         String primaryContact = etContact1 != null ? etContact1.getText().toString().trim() : "";
         if (!primaryContact.isEmpty()) {
@@ -1019,7 +1020,11 @@ public class ShareItemFragment extends Fragment {
             long expiryMillis = isHoursSelected ?
                     currentTime + (expiryHours * 60 * 60 * 1000L) :
                     currentTime + (expiryDays * 24 * 60 * 60 * 1000L);
-            expiryTime = java.time.Instant.ofEpochMilli(expiryMillis).toString();
+            // Format without timezone Z to avoid Postgres parse error
+            expiryTime = java.time.LocalDateTime.ofInstant(
+                    java.time.Instant.ofEpochMilli(expiryMillis),
+                    java.time.ZoneOffset.UTC
+            ).toString();
         }
 
         SupabaseItemBridge bridge = new SupabaseItemBridge();
@@ -1029,7 +1034,9 @@ public class ShareItemFragment extends Fragment {
                 mainCategory,
                 subcategory,
                 location,
-                mainContact,
+                selectedCoordinates != null ? selectedCoordinates.getLatitude() : null,
+                selectedCoordinates != null ? selectedCoordinates.getLongitude() : null,
+                "", // primary contact removed
                 contact1,
                 contact2,
                 userId,
@@ -1111,6 +1118,9 @@ public class ShareItemFragment extends Fragment {
             if (etContact1 != null) etContact1.setText("");
             if (etContact2 != null) etContact2.setText("");
             
+            // Clear location
+            clearLocation();
+            
             // Clear errors (with null checks)
             if (tilItemName != null) tilItemName.setError(null);
             if (tilItemDescription != null) tilItemDescription.setError(null);
@@ -1136,6 +1146,112 @@ public class ShareItemFragment extends Fragment {
             } else {
                 textExpiryValue.setText(expiryDays + " days until expiry");
             }
+        }
+    }
+    
+    /**
+     * Show information about automatic deletion of expired food items
+     */
+    private void showExpiryInfo() {
+        if (getContext() != null) {
+            String message = "Food items will be automatically deleted after the selected time expires. " +
+                           "This helps keep fresh items visible to the community.";
+            
+            androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(getContext());
+            builder.setTitle("Auto-Delete Food Items")
+                   .setMessage(message)
+                   .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                   .setIcon(android.R.drawable.ic_dialog_info)
+                   .show();
+        }
+    }
+    
+    /**
+     * Open the location picker fragment
+     */
+    private void initLocationPermissionLauncher() {
+        // Initialize permission launcher (stub implementation)
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    // Permissions result handled here if needed in future
+                });
+    }
+
+    private void openLocationPicker() {
+        if (!isAdded() || getActivity() == null) {
+            return;
+        }
+        
+        try {
+            LocationPickerFragment locationPicker = LocationPickerFragment.newInstance();
+            locationPicker.setLocationCallback(new LocationPickerFragment.LocationCallback() {
+                @Override
+                public void onLocationSelected(String location, LocationUtils.Coordinates coordinates) {
+                    handleLocationSelected(location, coordinates);
+                }
+            });
+            
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.main_fragment_container, locationPicker)
+                    .addToBackStack(null)
+                    .commit();
+                    
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening location picker", e);
+            Toast.makeText(getContext(), "Error opening location picker", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Handle location selection from the location picker
+     */
+    private void handleLocationSelected(String location, LocationUtils.Coordinates coordinates) {
+        try {
+            // Update the location field
+            if (etItemLocation != null) {
+                etItemLocation.setText(location);
+            }
+            
+            // Store the coordinates for later use
+            selectedCoordinates = coordinates;
+            
+            // Update button text to show location is selected
+            if (btnSelectLocation != null) {
+                btnSelectLocation.setText("Location Selected");
+            }
+            
+            Toast.makeText(getContext(), "Location selected: " + location, Toast.LENGTH_SHORT).show();
+            
+            Log.d(TAG, "Location selected: " + location + 
+                  (coordinates != null ? " (" + coordinates.toString() + ")" : ""));
+                  
+        } catch (Exception e) {
+            Log.e(TAG, "Error handling location selection", e);
+            Toast.makeText(getContext(), "Error setting location", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Clear the selected location
+     */
+    private void clearLocation() {
+        try {
+            if (etItemLocation != null) {
+                etItemLocation.setText("");
+            }
+            
+            selectedCoordinates = null;
+            
+            if (btnSelectLocation != null) {
+                btnSelectLocation.setText("Select Location");
+            }
+            
+            Log.d(TAG, "Location cleared");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "Error clearing location", e);
         }
     }
 }

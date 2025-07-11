@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Image View for regular images -->
+    <ImageView
+        android:id="@+id/image_media"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:background="@color/gray_light"
+        android:visibility="visible" />
+
+    <!-- Video thumbnail with play overlay -->
+    <FrameLayout
+        android:id="@+id/video_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/video_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="@color/gray_light" />
+
+        <ImageView
+            android:id="@+id/video_play_button"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_play_arrow"
+            android:background="@drawable/bg_circle_overlay"
+            android:padding="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Play video" />
+
+    </FrameLayout>
+
+</FrameLayout>

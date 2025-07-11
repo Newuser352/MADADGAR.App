@@ -17,6 +17,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.madadgarapp.R;
 import com.example.madadgarapp.models.Item;
+import com.example.madadgarapp.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +108,7 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
         private final TextView textItemCategory;
         private final TextView textItemLocation;
         private final TextView textItemDescription;
+        private final TextView textItemTime;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -115,6 +117,7 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
             textItemCategory = itemView.findViewById(R.id.text_item_category);
             textItemLocation = itemView.findViewById(R.id.text_item_location);
             textItemDescription = itemView.findViewById(R.id.text_item_description);
+            textItemTime = itemView.findViewById(R.id.text_item_time);
         }
 
 public void bind(final Item item, final OnItemClickListener listener) {
@@ -122,6 +125,9 @@ public void bind(final Item item, final OnItemClickListener listener) {
             textItemCategory.setText(item.getFullCategory());
             textItemLocation.setText(item.getLocation());
             textItemDescription.setText(item.getDescription());
+            // Set relative time using TimeUtils for better formatting
+            CharSequence relativeTime = TimeUtils.getRelativeTimeString(item.getCreatedAt());
+            textItemTime.setText(relativeTime);
             
             // Load image using Glide
             Glide.with(imageItem.getContext())

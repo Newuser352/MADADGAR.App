@@ -22,7 +22,7 @@ public class OAuthCallbackActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        authHelper = new SupabaseAuth();
+        authHelper = new SupabaseAuth(this);
         
         // Get the intent that started this activity
         Intent intent = getIntent();

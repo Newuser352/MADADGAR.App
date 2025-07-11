@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background_white"
     tools:context=".activities.ItemDetailActivity">
 
     <LinearLayout
@@ -12,22 +13,56 @@
         android:orientation="vertical">
 
         <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            android:background="@color/background_white"
+            app:titleTextColor="@color/text_primary"
+            app:navigationIcon="@null"
+            app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.MaterialComponents.Light" />
 
-        <!-- Item Image -->
-        <ImageView
-            android:id="@+id/image_item_detail"
+        <!-- Media Gallery Section -->
+        <LinearLayout
+            android:id="@+id/media_container"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:scaleType="centerCrop"
-            android:background="@color/gray_light"
-            android:contentDescription="@string/item_image" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Media ViewPager2 for images and videos -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/media_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:background="@color/gray_light" />
+
+            <!-- Media indicators -->
+            <LinearLayout
+                android:id="@+id/media_indicators"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp"
+                android:visibility="gone" />
+
+            <!-- Video play button overlay (visible when video is present) -->
+            <ImageView
+                android:id="@+id/video_play_overlay"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="-180dp"
+                android:src="@drawable/ic_play_arrow"
+                android:background="@drawable/bg_circle_overlay"
+                android:padding="16dp"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Play video" />
+
+        </LinearLayout>
 
         <!-- Content Container -->
         <LinearLayout
@@ -41,9 +76,7 @@
                 android:id="@+id/text_item_title_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
+                style="@style/TextAppearance.App.HeadlineLarge"
                 android:layout_marginBottom="8dp"
                 tools:text="Sample Item Title" />
 
@@ -59,8 +92,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="14sp"
-                    android:textColor="@color/colorPrimary"
+                    style="@style/TextAppearance.App.LabelLarge"
+                    android:textColor="@color/primary_color"
                     android:drawableStart="@drawable/ic_category"
                     android:drawablePadding="8dp"
                     android:gravity="center_vertical"
@@ -71,7 +104,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="14sp"
+                    style="@style/TextAppearance.App.LabelMedium"
                     android:textColor="@color/text_secondary"
                     android:drawableStart="@drawable/ic_location"
                     android:drawablePadding="8dp"
@@ -85,8 +118,8 @@
                 android:id="@+id/text_item_date_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
+                style="@style/TextAppearance.App.LabelSmall"
+                android:textColor="@color/text_hint"
                 android:layout_marginBottom="16dp"
                 android:drawableStart="@drawable/ic_calendar"
                 android:drawablePadding="8dp"
@@ -98,18 +131,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/description"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
+                style="@style/TextAppearance.App.HeadlineSmall"
                 android:layout_marginBottom="8dp" />
 
             <TextView
                 android:id="@+id/text_item_description_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:lineSpacingMultiplier="1.2"
+                style="@style/TextAppearance.App.BodyLarge"
                 android:layout_marginBottom="24dp"
                 tools:text="This is a detailed description of the item. It can be multiple lines and provide comprehensive information about what is being shared." />
 
@@ -118,9 +147,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/contact_information"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
+                style="@style/TextAppearance.App.HeadlineSmall"
                 android:layout_marginBottom="8dp" />
 
             <LinearLayout
@@ -135,34 +162,35 @@
                     android:id="@+id/text_owner_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
+                    style="@style/TextAppearance.App.LabelLarge"
                     android:textColor="@color/text_primary"
                     android:drawableStart="@drawable/ic_person"
-                    android:drawablePadding="8dp"
+                    android:drawablePadding="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginBottom="12dp"
+                    android:fontFamily="@font/roboto_medium"
                     tools:text="John Doe" />
 
                 <TextView
                     android:id="@+id/text_owner_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
+                    style="@style/TextAppearance.App.BodyLarge"
                     android:textColor="@color/text_secondary"
                     android:drawableStart="@drawable/ic_email"
-                    android:drawablePadding="8dp"
+                    android:drawablePadding="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginBottom="12dp"
                     tools:text="john.doe@example.com" />
 
                 <TextView
                     android:id="@+id/text_owner_phone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
+                    style="@style/TextAppearance.App.BodyLarge"
                     android:textColor="@color/text_secondary"
                     android:drawableStart="@drawable/ic_phone"
-                    android:drawablePadding="8dp"
+                    android:drawablePadding="12dp"
                     android:gravity="center_vertical"
                     tools:text="+1 (555) 123-4567" />
 
@@ -177,23 +205,27 @@
 
                 <Button
                     android:id="@+id/btn_contact_owner"
-                    style="@style/Widget.Material3.Button"
+                    style="@style/Widget.App.Button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="@string/contact_owner"
+                    android:textAppearance="@style/TextAppearance.App.LabelLarge"
+                    android:backgroundTint="@color/aston_green"
                     android:drawableStart="@drawable/ic_message"
                     android:drawablePadding="8dp" />
 
                 <Button
                     android:id="@+id/btn_share_item"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    style="@style/Widget.App.Button.Outlined"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="@string/share"
+                    android:textAppearance="@style/TextAppearance.App.LabelLarge"
+                    android:textColor="@color/aston_green"
                     android:drawableStart="@drawable/ic_share"
                     android:drawablePadding="8dp" />
 

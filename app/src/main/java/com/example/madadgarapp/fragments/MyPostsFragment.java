@@ -20,7 +20,8 @@ import com.example.madadgarapp.ShareItemFragment;
 import com.example.madadgarapp.repository.SupabaseItemBridge;
 import com.example.madadgarapp.models.SupabaseItem;
 import com.example.madadgarapp.models.Item;
-import com.example.madadgarapp.adapters.ItemAdapter;
+import com.example.madadgarapp.adapters.MyPostsAdapter;
+import com.example.madadgarapp.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +95,6 @@ public class MyPostsFragment extends Fragment {
     private void loadUserPosts() {
         // Check if user is authenticated
         if (!com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.isAuthenticated()) {
-            Toast.makeText(getContext(), "Please sign in to view your posts", Toast.LENGTH_SHORT).show();
             showEmptyState(true);
             return;
         }
@@ -121,15 +121,28 @@ public class MyPostsFragment extends Fragment {
                 
                 // Set up adapter if not already done
                 if (rvMyPosts.getAdapter() == null) {
-                    ItemAdapter adapter = new ItemAdapter(requireContext(), item -> {
-                        // Handle item click - could navigate to edit/detail view
-                        Toast.makeText(getContext(), "Item: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                    MyPostsAdapter adapter = new MyPostsAdapter(requireContext(), new MyPostsAdapter.OnItemActionListener() {
+                        @Override
+                        public void onItemClick(Item item) {
+                            // Handle item click - could navigate to detail view
+                            Toast.makeText(getContext(), "Item: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onItemDelete(Item item) {
+                            handleDeleteItem(item);
+                        }
+
+                        @Override
+                        public void onItemEdit(Item item) {
+                            handleEditItem(item);
+                        }
                     });
                     rvMyPosts.setAdapter(adapter);
                 }
                 
                 // Update adapter data
-                ((ItemAdapter) rvMyPosts.getAdapter()).setItems(items);
+                ((MyPostsAdapter) rvMyPosts.getAdapter()).setItems(items);
                 
                 // Show appropriate state
                 showEmptyState(items.isEmpty());
@@ -151,9 +164,9 @@ public class MyPostsFragment extends Fragment {
      * Convert SupabaseItem to Item for adapter compatibility
      */
     private Item convertSupabaseItemToItem(SupabaseItem supabaseItem) {
-        // Parse timestamps
-        long createdAt = parseTimestamp(supabaseItem.getCreatedAt());
-        long expiresAt = parseTimestamp(supabaseItem.getExpiresAt());
+        // Parse timestamps using TimeUtils
+        long createdAt = supabaseItem.getCreatedAt() != null ? TimeUtils.parseTimestamp(supabaseItem.getCreatedAt()) : System.currentTimeMillis();
+        long expiresAt = supabaseItem.getExpiresAt() != null ? TimeUtils.parseTimestamp(supabaseItem.getExpiresAt()) : Long.MAX_VALUE;
         
         // Get the first image URL if available
         String imageUrl = null;
@@ -176,20 +189,63 @@ public class MyPostsFragment extends Fragment {
         );
     }
     
+    
     /**
-     * Parse timestamp string to long
+     * Handle item deletion
      */
-    private long parseTimestamp(String timestamp) {
-        if (timestamp == null || timestamp.isEmpty()) {
-            return System.currentTimeMillis();
+    private void handleDeleteItem(Item item) {
+        // Check if user is authenticated
+        if (!com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.isAuthenticated()) {
+            Toast.makeText(getContext(), "Please sign in to delete items", Toast.LENGTH_SHORT).show();
+            return;
         }
         
-        try {
-            // Parse ISO timestamp
-            return java.time.Instant.parse(timestamp).toEpochMilli();
-        } catch (Exception e) {
-            // Fallback to current time if parsing fails
-            return System.currentTimeMillis();
+        // Get current user ID
+        var currentUser = com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(getContext(), "User not found", Toast.LENGTH_SHORT).show();
+            return;
         }
+        String userId = currentUser.getId();
+        
+        // Show loading message
+        Toast.makeText(getContext(), "Deleting item...", Toast.LENGTH_SHORT).show();
+        
+        // Delete item from Supabase
+        SupabaseItemBridge bridge = new SupabaseItemBridge();
+        bridge.deleteItem(item.getId(), userId, new SupabaseItemBridge.RepositoryCallback<kotlin.Unit>() {
+            @Override
+            public void onSuccess(kotlin.Unit result) {
+                // Remove item from adapter
+                if (rvMyPosts.getAdapter() instanceof MyPostsAdapter) {
+                    ((MyPostsAdapter) rvMyPosts.getAdapter()).removeItem(item);
+                }
+                
+                Toast.makeText(getContext(), "Item deleted successfully", Toast.LENGTH_SHORT).show();
+                
+                // Check if list is now empty
+                if (rvMyPosts.getAdapter() != null && rvMyPosts.getAdapter().getItemCount() == 0) {
+                    showEmptyState(true);
+                }
+            }
+            
+            @Override
+            public void onError(String error) {
+                Toast.makeText(getContext(), "Failed to delete item: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+    
+    /**
+     * Handle item editing (placeholder for future implementation)
+     */
+    private void handleEditItem(Item item) {
+        // For now, show a placeholder message
+        // This can be implemented later to navigate to an edit screen
+        Toast.makeText(getContext(), "Edit functionality coming soon for: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+        
+        // TODO: Implement edit functionality
+        // - Navigate to ShareItemFragment with pre-filled data
+        // - Or create a dedicated EditItemFragment
     }
 }

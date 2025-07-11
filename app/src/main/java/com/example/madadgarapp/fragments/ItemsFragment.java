@@ -37,6 +37,7 @@ import com.example.madadgarapp.R;
 import com.example.madadgarapp.dialogs.CategoryDialogFragment;
 import com.example.madadgarapp.repository.SupabaseItemBridge;
 import com.example.madadgarapp.models.SupabaseItem;
+import com.example.madadgarapp.utils.TimeUtils;
 
 public class ItemsFragment extends Fragment {
     private RecyclerView rvItems;
@@ -110,16 +111,7 @@ public class ItemsFragment extends Fragment {
 itemAdapter = new ItemAdapter(requireContext(), item -> {
             // Launch ItemDetailActivity on item click
             Intent intent = new Intent(getContext(), ItemDetailActivity.class);
-            intent.putExtra("ITEM_ID", item.getId());
-            intent.putExtra("ITEM_TITLE", item.getTitle());
-            intent.putExtra("ITEM_DESCRIPTION", item.getDescription());
-            intent.putExtra("ITEM_CATEGORY", item.getCategory());
-            intent.putExtra("ITEM_SUBCATEGORY", item.getSubCategory());
-            intent.putExtra("ITEM_LOCATION", item.getLocation());
-            intent.putExtra("ITEM_CONTACT", item.getContact());
-            intent.putExtra("ITEM_USER", item.getOwner());
-            intent.putExtra("ITEM_TIMESTAMP", item.getTimestamp());
-            intent.putExtra("ITEM_EXPIRATION", item.getExpiration());
+            intent.putExtra(ItemDetailActivity.EXTRA_ITEM, item);
             startActivity(intent);
         });
         
@@ -213,46 +205,40 @@ itemAdapter = new ItemAdapter(requireContext(), item -> {
      * Convert SupabaseItem to Item for adapter compatibility
      */
     private Item convertSupabaseItemToItem(SupabaseItem supabaseItem) {
-        // Parse timestamps
-        long createdAt = parseTimestamp(supabaseItem.getCreatedAt());
-        long expiresAt = parseTimestamp(supabaseItem.getExpiresAt());
-        
-        // Get the first image URL if available
-        String imageUrl = null;
+        // Convert SupabaseItem to our Java Item model while preserving all media data
+
+        // Parse timestamps using TimeUtils for better formatting
+        long createdAt = supabaseItem.getCreatedAt() != null ?
+                TimeUtils.parseTimestamp(supabaseItem.getCreatedAt()) : System.currentTimeMillis();
+        long expiresAt = supabaseItem.getExpiresAt() != null ?
+                TimeUtils.parseTimestamp(supabaseItem.getExpiresAt()) : Long.MAX_VALUE;
+
+        // Use the first image as a cover/thumbnail for quick preview in the list
+        String coverImageUrl = null;
         if (supabaseItem.getImageUrls() != null && !supabaseItem.getImageUrls().isEmpty()) {
-            imageUrl = supabaseItem.getImageUrls().get(0);
+            coverImageUrl = supabaseItem.getImageUrls().get(0);
         }
-        
-        return new Item(
-            supabaseItem.getId(),
-            supabaseItem.getTitle(),
-            supabaseItem.getDescription(),
-            supabaseItem.getMainCategory(),
-            supabaseItem.getSubCategory(),
-            supabaseItem.getLocation(),
-            supabaseItem.getContactNumber(),
-            imageUrl,
-            supabaseItem.getOwnerId(),
-            createdAt,
-            expiresAt
+
+        // Create Item instance
+        Item item = new Item(
+                supabaseItem.getId(),
+                supabaseItem.getTitle(),
+                supabaseItem.getDescription(),
+                supabaseItem.getMainCategory(),
+                supabaseItem.getSubCategory(),
+                supabaseItem.getLocation(),
+                supabaseItem.getContactNumber(),
+                coverImageUrl,
+                supabaseItem.getOwnerId(),
+                createdAt,
+                expiresAt
         );
-    }
-    
-    /**
-     * Parse timestamp string to long
-     */
-    private long parseTimestamp(String timestamp) {
-        if (timestamp == null || timestamp.isEmpty()) {
-            return System.currentTimeMillis();
-        }
-        
-        try {
-            // Parse ISO timestamp
-            return java.time.Instant.parse(timestamp).toEpochMilli();
-        } catch (Exception e) {
-            // Fallback to current time if parsing fails
-            return System.currentTimeMillis();
-        }
+
+        // Attach full media lists so that ItemDetailActivity can render them
+        item.setImageUrls(supabaseItem.getImageUrls());
+        item.setVideoUrl(supabaseItem.getVideoUrl());
+
+        return item;
     }
     
     private void applyFilters() {

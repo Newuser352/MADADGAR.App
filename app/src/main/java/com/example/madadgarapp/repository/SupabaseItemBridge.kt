@@ -174,6 +174,8 @@ class SupabaseItemBridge : CoroutineScope {
      * @param mainCategory Main category (Food/Non-Food)
      * @param subCategory Sub category
      * @param location Item location
+     * @param latitude Item latitude (optional)
+     * @param longitude Item longitude (optional)
      * @param contactNumber Main contact number
      * @param contact1 Additional contact 1 (optional)
      * @param contact2 Additional contact 2 (optional)
@@ -190,6 +192,8 @@ class SupabaseItemBridge : CoroutineScope {
         mainCategory: String,
         subCategory: String,
         location: String,
+        latitude: Double?,
+        longitude: Double?,
         contactNumber: String,
         contact1: String?,
         contact2: String?,
@@ -250,6 +254,8 @@ class SupabaseItemBridge : CoroutineScope {
                     mainCategory = mainCategory,
                     subCategory = subCategory,
                     location = location,
+                    latitude = latitude,
+                    longitude = longitude,
                     contactNumber = contactNumber,
                     contact1 = contact1,
                     contact2 = contact2,
@@ -339,6 +345,53 @@ class SupabaseItemBridge : CoroutineScope {
             } catch (e: Exception) {
                 Log.e(TAG, "Exception fetching user items", e)
                 callback.onError(e.message ?: "Exception fetching items")
+            }
+        }
+    }
+    
+    /**
+     * Delete an item from Supabase (marks as inactive)
+     * 
+     * @param itemId ID of the item to delete
+     * @param userId User ID to verify ownership
+     * @param callback Callback for success/error handling
+     */
+    fun deleteItem(itemId: String, userId: String, callback: RepositoryCallback<Unit>) {
+    deleteItemInternal(itemId, userIdFilter = userId, callback)
+}
+
+/**
+ * Delete an item without owner check (admin/service use only)
+ */
+fun deleteItemAdmin(itemId: String, callback: RepositoryCallback<Unit>) {
+    deleteItemInternal(itemId, userIdFilter = null, callback)
+}
+
+private fun deleteItemInternal(itemId: String, userIdFilter: String?, callback: RepositoryCallback<Unit>) {
+        Log.d(TAG, "Deleting item from Supabase: $itemId" + if (userIdFilter != null) " for user: $userIdFilter" else " (admin)")
+        
+        launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    if (userIdFilter != null) {
+                        repository.deleteItem(itemId, userIdFilter)
+                    } else {
+                        repository.deleteItemAdmin(itemId)
+                    }
+                }
+                
+                if (result.isSuccess) {
+                    Log.d(TAG, "Item deleted successfully from Supabase: $itemId")
+                    callback.onSuccess(Unit)
+                } else {
+                    val error = result.exceptionOrNull()?.message ?: "Failed to delete item"
+                    Log.e(TAG, "Failed to delete item from Supabase: $error")
+                    callback.onError(error)
+                }
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception deleting item from Supabase", e)
+                callback.onError(e.message ?: "Exception deleting item")
             }
         }
     }

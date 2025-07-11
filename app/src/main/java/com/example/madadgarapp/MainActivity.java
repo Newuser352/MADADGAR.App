@@ -106,16 +106,22 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
                 }
             }
         });
-        // Observe authentication state
+        // Observe authentication state with delay to allow session restoration
         authManager.getAuthLiveData().observe(this, new Observer<AuthManager.AuthState>() {
             @Override
             public void onChanged(AuthManager.AuthState authState) {
                 if (authState instanceof AuthManager.AuthState.Unauthenticated) {
-                    // Navigate to AuthSelectionActivity if unauthenticated
-                    Intent intent = new Intent(MainActivity.this, AuthSelectionActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
+                    // Add a small delay to ensure session restoration has been attempted
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        // Double-check authentication status before navigating away
+                        if (authManager.getCurrentAuthState() instanceof AuthManager.AuthState.Unauthenticated) {
+                            // Navigate to AuthSelectionActivity if still unauthenticated
+                            Intent intent = new Intent(MainActivity.this, AuthSelectionActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }, 2000); // 2 second delay to allow for session restoration
                 }
             }
         });
@@ -146,6 +152,8 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(R.string.app_name);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
         }
         
         // Add AppBarLayout elevation listener for scroll behavior
@@ -224,7 +232,7 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
                     break;
                 case "share_item":
                     activeFragment = shareItemFragment;
-                    bottomNavigationView.setSelectedItemId(R.id.navigation_share_item);
+                    bottomNavigationView.setSelectedItemId(R.id.navigation_add);
                     break;
                 case "my_posts":
                     activeFragment = myPostsFragment;
@@ -260,8 +268,7 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             if (itemId == R.id.navigation_items) {
                 switchFragment(itemsFragment, "items");
                 return true;
-            } else if (itemId == R.id.navigation_share_item) {
-                // Show the share item fragment
+            } else if (itemId == R.id.navigation_add) {
                 switchFragment(shareItemFragment, "share_item");
                 return true;
             } else if (itemId == R.id.navigation_my_posts) {
@@ -278,12 +285,14 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
         // Handle navigation item reselection
         bottomNavigationView.setOnItemReselectedListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == R.id.navigation_share_item) {
-                // If share item is already selected and clicked again, ensure the form is shown
-                showShareItemForm();
-            } else if (itemId == R.id.navigation_items) {
+            if (itemId == R.id.navigation_items) {
                 // Show categories dialog when items tab is pressed again
                 showCategoriesDialog();
+            } else if (itemId == R.id.navigation_add) {
+                // Reset or show add form when add tab is reselected
+                if (shareItemFragment != null && shareItemFragment.isVisible()) {
+                    Toast.makeText(this, "Add Item Form", Toast.LENGTH_SHORT).show();
+                }
             } else if (itemId == R.id.navigation_my_posts) {
                 // Refresh my posts when tab is reselected
                 if (myPostsFragment != null && myPostsFragment.isVisible()) {
@@ -299,6 +308,7 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             }
         });
     }
+    
     
     private void switchFragment(Fragment fragment, String tag) {
         try {
@@ -408,6 +418,16 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
     }
     
     @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh authentication status when app comes to foreground
+        // This helps restore session if the app was backgrounded
+        if (authManager != null) {
+            authManager.refreshAuthStatus();
+        }
+    }
+    
+    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         
@@ -436,8 +456,8 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
+        // Don't inflate any menu to remove the three dots
+        return false;
     }
     
     @Override

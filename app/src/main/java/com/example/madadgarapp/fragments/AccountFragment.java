@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,7 +22,6 @@ import com.example.madadgarapp.AuthSelectionActivity;
 import com.example.madadgarapp.R;
 import com.example.madadgarapp.utils.AuthManager;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.card.MaterialCardView;
 
 import javax.inject.Inject;
 
@@ -39,10 +39,10 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class AccountFragment extends Fragment {
 
     // UI Elements
-    private TextView textUserName;
+    private TextView textUserName, textEmailAddress;
     private MaterialButton btnLogout;
-    private LinearLayout layoutRateUs, layoutJoinCommunity, layoutShareApp, layoutReportProblem;
-    private MaterialCardView cardProfile, cardOptions;
+    private LinearLayout layoutRateUs, layoutJoinCommunity, layoutCustomerSupport, layoutShareApp, layoutReportProblem;
+    private ImageView imageBackArrow;
 
     public AccountFragment() {
         // Required empty public constructor
@@ -78,18 +78,21 @@ public class AccountFragment extends Fragment {
         // Profile section
         textUserName = view.findViewById(R.id.text_user_name);
         
-        // Cards
-        cardProfile = view.findViewById(R.id.card_profile);
-        cardOptions = view.findViewById(R.id.card_options);
-        
         // Option layouts
         layoutRateUs = view.findViewById(R.id.layout_rate_us);
         layoutJoinCommunity = view.findViewById(R.id.layout_join_community);
         layoutShareApp = view.findViewById(R.id.layout_share_app);
+        layoutCustomerSupport = view.findViewById(R.id.layout_customer_support);
         layoutReportProblem = view.findViewById(R.id.layout_report_problem);
-        
+
         // Logout button
         btnLogout = view.findViewById(R.id.btn_logout);
+
+        // Back arrow
+        imageBackArrow = view.findViewById(R.id.image_back_arrow);
+
+        // User email
+        textEmailAddress = view.findViewById(R.id.text_email_address);
     }
 
     /**
@@ -100,7 +103,11 @@ public class AccountFragment extends Fragment {
         layoutRateUs.setOnClickListener(v -> onRateUsClicked());
         layoutJoinCommunity.setOnClickListener(v -> onJoinCommunityClicked());
         layoutShareApp.setOnClickListener(v -> onShareAppClicked());
+        layoutCustomerSupport.setOnClickListener(v -> onCustomerSupportClicked());
         layoutReportProblem.setOnClickListener(v -> onReportProblemClicked());
+        
+        // Back arrow
+        imageBackArrow.setOnClickListener(v -> requireActivity().onBackPressed());
         
         // Logout button
         btnLogout.setOnClickListener(v -> onLogoutClicked());
@@ -124,6 +131,23 @@ public class AccountFragment extends Fragment {
         
         // Display username
         textUserName.setText(username);
+        
+        // Fetch current user email dynamically
+        String email = null;
+        try {
+            com.example.madadgarapp.utils.AuthManager authManager = new ViewModelProvider(requireActivity()).get(com.example.madadgarapp.utils.AuthManager.class);
+            com.example.madadgarapp.utils.AuthManager.UserInfo user = (com.example.madadgarapp.utils.AuthManager.UserInfo) authManager.getCurrentUser().getValue();
+            if (user != null) {
+                email = user.getEmail();
+            }
+        } catch (Exception e) {
+            // Log but keep UI graceful
+            android.util.Log.w("AccountFragment", "Could not fetch current user email", e);
+        }
+        if (email == null || email.isEmpty()) {
+            email = "Unknown";
+        }
+        textEmailAddress.setText(email);
     }
 
     /**
@@ -159,6 +183,22 @@ public class AccountFragment extends Fragment {
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(getContext(), "Could not open community link", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Handle CUSTOMER SUPPORT option click
+     * Opens a support page or contact option
+     */
+    private void onCustomerSupportClicked() {
+        // Implement customer support handling
+        try {
+            // For example, open a support webpage
+            String supportUrl = "https://example.com/support"; // Replace with actual support URL
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(supportUrl));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Could not open support", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -235,23 +275,20 @@ public class AccountFragment extends Fragment {
 
     /**
      * Perform logout operation
-     * Clear user session - MainActivity will handle navigation via state observation
+     * Clear user session and navigate to login screen
      */
     private void logout() {
         try {
             // Obtain AuthManager via ViewModelProvider
-            AuthManager authManager = new ViewModelProvider(this).get(AuthManager.class);
-            
-            // Sign out from the authentication system
-            // MainActivity observes auth state and will handle navigation
+            AuthManager authManager = new ViewModelProvider(requireActivity()).get(AuthManager.class);
+            // Sign out asynchronously
             authManager.signOut();
-            
-            // Show success message
+            // Inform the user
             Toast.makeText(getContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
-            
+            // NOTE: Navigation is handled by MainActivity's AuthState observer once sign-out completes.
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Error during logout: " + e.getMessage(), 
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Error during logout: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
 }

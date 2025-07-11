@@ -1,20 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Bottom Navigation Style -->
-    <style name="Widget.App.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="itemIconTint">@color/bottom_nav_icon</item>
-        <item name="itemTextColor">@color/bottom_nav_text</item>
-        <item name="itemRippleColor">@color/bottom_nav_ripple</item>
-        <item name="itemIconSize">24dp</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="android:minHeight">72dp</item>
-        <item name="itemTextAppearanceActive">@style/TextAppearance.App.BottomNavigation.Active</item>
-        <item name="itemTextAppearanceInactive">@style/TextAppearance.App.BottomNavigation.Inactive</item>
-        <item name="itemBackground">@drawable/bottom_nav_indicator</item>
+    
+    <!-- Bottom Navigation Active Indicator Style -->
+    <style name="App.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/bottom_nav_indicator</item>
+        <item name="android:width">48dp</item>
+        <item name="android:height">32dp</item>
+        <item name="cornerRadius">16dp</item>
     </style>
     
-    <!-- Bottom Navigation Text Styles -->
+    <!-- Bottom Navigation Theme -->
+    <style name="App.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="android:background">@drawable/bottom_nav_background</item>
+        <item name="itemIconTint">@color/bottom_nav_colors</item>
+        <item name="itemTextColor">@color/bottom_nav_colors</item>
+        <item name="itemRippleColor">@color/bottom_nav_ripple</item>
+        <item name="itemActiveIndicatorStyle">@style/App.BottomNavigation.ActiveIndicator</item>
+        <item name="itemIconSize">24dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:minHeight">76dp</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="android:elevation">8dp</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.App.BottomNavigation.Active</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.App.BottomNavigation.Inactive</item>
+        <item name="itemPaddingTop">6dp</item>
+        <item name="itemPaddingBottom">6dp</item>
+    </style>
+    
+    <!-- Text Appearance for Bottom Navigation -->
     <style name="TextAppearance.App.BottomNavigation.Active" parent="TextAppearance.MaterialComponents.Caption">
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
@@ -22,8 +36,9 @@
     </style>
     
     <style name="TextAppearance.App.BottomNavigation.Inactive" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">12sp</item>
+        <item name="android:textSize">11sp</item>
         <item name="android:textStyle">normal</item>
         <item name="android:textColor">@color/bottom_nav_text_unselected</item>
     </style>
+    
 </resources>

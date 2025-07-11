@@ -12,9 +12,20 @@ import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.util.UUID
+
+/**
+ * Data class for updating item status (for delete operations)
+ */
+@Serializable
+data class ItemDeleteUpdate(
+    @SerialName("is_active")
+    val isActive: Boolean
+)
 
 /**
  * Repository class for handling item operations with Supabase
@@ -145,17 +156,47 @@ class ItemRepository {
         return withContext(Dispatchers.IO) {
             try {
                 Log.d(TAG, "Creating new item: ${item.title}")
+                Log.d(TAG, "Item details - MainCategory: ${item.mainCategory}, ExpiresAt: ${item.expiresAt}")
                 
-                val result = SupabaseClient.client
+                val postgrestResult = SupabaseClient.client
                     .from(ITEMS_TABLE)
                     .insert(item)
-                    .decodeSingle<SupabaseItem>()
+
+                // Supabase may return an empty body when the server is configured with RETURNING=minimal
+                val result: SupabaseItem? = try {
+                    postgrestResult.decodeSingle<SupabaseItem>()
+                } catch (e: Exception) {
+                    Log.w(TAG, "decodeSingle returned no data, treating insert as successful", e)
+                    null
+                }
+
+                val created = result ?: SupabaseItem(
+                    id = null,
+                    title = item.title,
+                    description = item.description,
+                    mainCategory = item.mainCategory,
+                    subCategory = item.subCategory,
+                    location = item.location,
+                    contactNumber = item.contactNumber,
+                    contact1 = item.contact1,
+                    contact2 = item.contact2,
+                    ownerId = item.ownerId,
+                    expiresAt = item.expiresAt,
+                    imageUrls = item.imageUrls,
+                    videoUrl = item.videoUrl
+                )
                 
-                Log.d(TAG, "Successfully created item with ID: ${result.id}")
-                Result.success(result)
+                Log.d(TAG, "Item insert completed; received id: ${created.id}")
+                Result.success(created)
                 
             } catch (e: Exception) {
-                Log.e(TAG, "Error creating item", e)
+                Log.e(TAG, "Error creating item: ${e.message}", e)
+                Log.e(TAG, "Item that failed to create - Title: ${item.title}, MainCategory: ${item.mainCategory}, ExpiresAt: ${item.expiresAt}")
+                Log.e(TAG, "Full exception details: ${e.javaClass.simpleName} - ${e.localizedMessage}")
+                
+                // Log the stack trace for more details
+                e.printStackTrace()
+                
                 Result.failure(e)
             }
         }
@@ -231,21 +272,47 @@ class ItemRepository {
      * @return Success or failure result
      */
     suspend fun deleteItem(itemId: String, userId: String): Result<Unit> {
+    return deleteItemInternal(itemId, userIdFilter = userId)
+}
+
+/**
+ * Delete an item without owner check (admin/service use only)
+ */
+suspend fun deleteItemAdmin(itemId: String): Result<Unit> {
+    return deleteItemInternal(itemId, userIdFilter = null)
+}
+
+private suspend fun deleteItemInternal(itemId: String, userIdFilter: String?): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                Log.d(TAG, "Deleting item: $itemId")
+                Log.d(TAG, "Deleting item: $itemId" + if (userIdFilter != null) " for user: $userIdFilter" else " (admin)")
                 
-                // For now, let's comment out the delete functionality
-                // This can be implemented when we have the correct Supabase syntax
-                // SupabaseClient.client.from(ITEMS_TABLE).update(...)
+                // Create update data with proper serialization
+                val updateData = ItemDeleteUpdate(
+                    isActive = false
+                )
                 
-                Log.d(TAG, "Delete functionality will be implemented with correct Supabase syntax")
+                Log.d(TAG, "Update data: isActive=${updateData.isActive}")
                 
-                Log.d(TAG, "Successfully deleted item: $itemId")
+                // Perform the update operation
+                SupabaseClient.client
+                    .from(ITEMS_TABLE)
+                    .update(updateData) {
+                        filter {
+                            eq("id", itemId)
+                            if (userIdFilter != null) {
+                                eq("owner_id", userIdFilter)
+                            }
+                        }
+                    }
+                
+                Log.d(TAG, "Successfully marked item as deleted: $itemId")
                 Result.success(Unit)
                 
             } catch (e: Exception) {
-                Log.e(TAG, "Error deleting item", e)
+                Log.e(TAG, "Error deleting item: ${e.message}", e)
+                Log.e(TAG, "Exception type: ${e.javaClass.simpleName}")
+                e.printStackTrace()
                 Result.failure(e)
             }
         }

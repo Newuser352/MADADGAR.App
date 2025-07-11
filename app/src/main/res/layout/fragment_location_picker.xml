@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/white">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select Location"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_color"
+        android:layout_marginBottom="16dp"
+        android:gravity="center" />
+
+    <!-- Location Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="@color/primary_color"
+        app:hintTextColor="@color/primary_color">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Location"
+            android:inputType="textPostalAddress"
+            android:maxLines="3"
+            android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Get Current Location Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_get_current_location"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Get Current Location"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        app:icon="@drawable/ic_location"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:cornerRadius="8dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    <!-- Use Location Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_use_location"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Use This Location"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        app:icon="@drawable/ic_add"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:cornerRadius="8dp"
+        style="@style/Widget.Material3.Button" />
+
+    <!-- Location Help Text -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="You can either enter your location manually or use GPS to get your current location automatically."
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:padding="8dp" />
+
+    <!-- Spacer -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Permission Info -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Location permission is required to use GPS functionality"
+        android:textSize="12sp"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:padding="8dp"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

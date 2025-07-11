@@ -3,7 +3,8 @@ package com.example.madadgarapp.models;
 /**
  * Model class representing an item that can be shared or viewed in the app.
  */
-public class Item {
+public class Item implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String title;
     private String description;
@@ -12,6 +13,8 @@ public class Item {
     private String location;
     private String contactNumber;
     private String imageUrl;
+    private java.util.List<String> imageUrls;
+    private String videoUrl;
     private String ownerId;
     private long createdAt;
     private long expiryTime;
@@ -99,6 +102,22 @@ public class Item {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public java.util.List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(java.util.List<String> imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
     }
 
     public String getOwnerId() {

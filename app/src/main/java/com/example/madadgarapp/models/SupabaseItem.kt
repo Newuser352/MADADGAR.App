@@ -17,6 +17,10 @@ data class SupabaseItem(
     @SerialName("sub_category")
     val subCategory: String,
     val location: String,
+    @SerialName("latitude")
+    val latitude: Double? = null,
+    @SerialName("longitude")
+    val longitude: Double? = null,
     @SerialName("contact_number")
     val contactNumber: String,
     val contact1: String? = null,
@@ -49,6 +53,10 @@ data class NewSupabaseItem(
     @SerialName("sub_category")
     val subCategory: String,
     val location: String,
+    @SerialName("latitude")
+    val latitude: Double? = null,
+    @SerialName("longitude")
+    val longitude: Double? = null,
     @SerialName("contact_number")
     val contactNumber: String,
     val contact1: String? = null,

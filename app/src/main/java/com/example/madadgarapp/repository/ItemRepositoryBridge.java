@@ -250,6 +250,8 @@ public class ItemRepositoryBridge {
             mainCategory,
             subCategory,
             location,
+            null, // latitude
+            null, // longitude
             contactNumber,
             contact1,
             contact2,

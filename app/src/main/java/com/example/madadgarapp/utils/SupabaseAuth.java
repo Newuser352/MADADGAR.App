@@ -1,7 +1,12 @@
 package com.example.madadgarapp.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LifecycleOwner;
@@ -31,7 +36,11 @@ import kotlin.Result;
 public class SupabaseAuth {
     
     private static final String TAG = "SupabaseAuth";
-    private ExecutorService executor;
+private ExecutorService executor;
+private SharedPreferences securePrefs;
+
+private static final String PREF_ACCESS_TOKEN = "access_token";
+private static final String PREF_REFRESH_TOKEN = "refresh_token";
     
     // NOTE: Supabase configuration is now handled by SupabaseClient.kt
     // Update the credentials there instead of here
@@ -44,7 +53,19 @@ public class SupabaseAuth {
         void onError(String error);
     }
     
-    public SupabaseAuth() {
+public SupabaseAuth(Context context) {
+    try {
+        String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+        securePrefs = EncryptedSharedPreferences.create(
+            "auth_shared_prefs",
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        );
+    } catch (GeneralSecurityException | IOException e) {
+        Log.e(TAG, "Error creating secure shared preferences", e);
+    }
         this.executor = Executors.newSingleThreadExecutor();
         validateConfiguration();
     }
@@ -103,7 +124,16 @@ public class SupabaseAuth {
                 Thread.sleep(1000);
                 
                 Log.d(TAG, "Google Sign-In with Supabase completed successfully");
-                callback.onSuccess("Successfully signed in with Google");
+// Save tokens securely
+String accessTokenToStore = accessToken != null ? accessToken : ""; // Replace with actual token from response
+String refreshToken = "mock_refresh_token"; // Replace with actual token from response
+
+securePrefs.edit()
+    .putString(PREF_ACCESS_TOKEN, accessTokenToStore)
+    .putString(PREF_REFRESH_TOKEN, refreshToken)
+    .apply();
+
+callback.onSuccess("Successfully signed in with Google");
                 
             } catch (Exception e) {
                 Log.e(TAG, "Error during Google Sign-In: " + e.getMessage(), e);
@@ -239,6 +269,9 @@ public class SupabaseAuth {
         
         executor.execute(() -> {
             try {
+                // Clear stored tokens first
+                clearStoredTokens();
+                
                 // TODO: Implement actual Supabase sign out
                 // supabase.auth.signOut()
                 
@@ -248,6 +281,8 @@ public class SupabaseAuth {
                 
             } catch (Exception e) {
                 Log.e(TAG, "Error during sign out: " + e.getMessage(), e);
+                // Still clear tokens even if server sign out fails
+                clearStoredTokens();
                 callback.onError("Sign out failed: " + e.getMessage());
             }
         });
@@ -259,11 +294,136 @@ public class SupabaseAuth {
      * @return true if user is authenticated, false otherwise
      */
     public boolean isUserAuthenticated() {
-        // TODO: Implement actual session check
-        // return supabase.auth.currentUserOrNull() != null
+        String accessToken = getStoredAccessToken();
+        String refreshToken = getStoredRefreshToken();
         
-        // For now, return false as placeholder
-        return false;
+        if (accessToken == null || accessToken.isEmpty()) {
+            Log.d(TAG, "No access token found - user not authenticated");
+            return false;
+        }
+        
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            Log.w(TAG, "Access token exists but no refresh token - session may be invalid");
+            return false;
+        }
+        
+        // TODO: Add token expiry validation when implementing real Supabase SDK
+        // For now, assume valid if both tokens exist
+        return true;
+    }
+    
+    /**
+     * Validate current session and refresh if needed
+     * 
+     * @param callback Callback to handle success/error
+     */
+    public void validateSession(AuthCallback callback) {
+        executor.execute(() -> {
+            try {
+                String accessToken = getStoredAccessToken();
+                String refreshToken = getStoredRefreshToken();
+                
+                if (accessToken == null || accessToken.isEmpty()) {
+                    Log.d(TAG, "No access token found - session invalid");
+                    callback.onError("No active session");
+                    return;
+                }
+                
+                if (refreshToken == null || refreshToken.isEmpty()) {
+                    Log.w(TAG, "Missing refresh token - forcing sign out");
+                    clearStoredTokens();
+                    callback.onError("Session expired - please sign in again");
+                    return;
+                }
+                
+                // TODO: When implementing real Supabase SDK, check token expiry here
+                // For now, simulate session validation
+                Log.d(TAG, "Session validation successful");
+                callback.onSuccess("Session is valid");
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error during session validation: " + e.getMessage(), e);
+                callback.onError("Session validation failed: " + e.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * Refresh authentication tokens
+     * 
+     * @param callback Callback to handle success/error
+     */
+    public void refreshSession(AuthCallback callback) {
+        executor.execute(() -> {
+            try {
+                String refreshToken = getStoredRefreshToken();
+                
+                if (refreshToken == null || refreshToken.isEmpty()) {
+                    Log.e(TAG, "Cannot refresh session - no refresh token found");
+                    clearStoredTokens();
+                    callback.onError("refresh_token_not_found - please sign in again");
+                    return;
+                }
+                
+                // TODO: Replace with actual Supabase refresh call
+                // val session = supabase.auth.refreshSession(refreshToken)
+                
+                // Simulate network delay
+                Thread.sleep(1000);
+                
+                // Simulate successful refresh
+                String newAccessToken = "new_access_token_" + System.currentTimeMillis();
+                String newRefreshToken = "new_refresh_token_" + System.currentTimeMillis();
+                
+                // Store new tokens
+                securePrefs.edit()
+                    .putString(PREF_ACCESS_TOKEN, newAccessToken)
+                    .putString(PREF_REFRESH_TOKEN, newRefreshToken)
+                    .apply();
+                
+                Log.d(TAG, "Session refreshed successfully");
+                callback.onSuccess("Session refreshed");
+                
+            } catch (Exception e) {
+                Log.e(TAG, "Error refreshing session: " + e.getMessage(), e);
+                // Clear tokens on refresh failure
+                clearStoredTokens();
+                callback.onError("Session refresh failed - please sign in again");
+            }
+        });
+    }
+    
+    /**
+     * Get stored access token
+     * 
+     * @return access token or null if not found
+     */
+    private String getStoredAccessToken() {
+        if (securePrefs == null) return null;
+        return securePrefs.getString(PREF_ACCESS_TOKEN, null);
+    }
+    
+    /**
+     * Get stored refresh token
+     * 
+     * @return refresh token or null if not found
+     */
+    private String getStoredRefreshToken() {
+        if (securePrefs == null) return null;
+        return securePrefs.getString(PREF_REFRESH_TOKEN, null);
+    }
+    
+    /**
+     * Clear all stored authentication tokens
+     */
+    private void clearStoredTokens() {
+        if (securePrefs != null) {
+            securePrefs.edit()
+                .remove(PREF_ACCESS_TOKEN)
+                .remove(PREF_REFRESH_TOKEN)
+                .apply();
+            Log.d(TAG, "Cleared stored authentication tokens");
+        }
     }
     
     /**

@@ -1,32 +1,43 @@
 package com.example.madadgarapp.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.madadgarapp.R;
+import com.example.madadgarapp.adapters.MediaAdapter;
 import com.example.madadgarapp.models.Item;
+import com.example.madadgarapp.utils.SupabaseClient;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class ItemDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_ITEM = "extra_item";
 
-    private ImageView imageItemDetail;
+    private ViewPager2 mediaViewPager;
+    private LinearLayout mediaIndicators;
+    private ImageView videoPlayOverlay;
     private TextView textItemTitleDetail;
     private TextView textItemCategoryDetail;
     private TextView textItemLocationDetail;
@@ -39,6 +50,7 @@ public class ItemDetailActivity extends AppCompatActivity {
     private Button btnShareItem;
 
     private Item currentItem;
+    private MediaAdapter mediaAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +72,9 @@ public class ItemDetailActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        imageItemDetail = findViewById(R.id.image_item_detail);
+        mediaViewPager = findViewById(R.id.media_viewpager);
+        mediaIndicators = findViewById(R.id.media_indicators);
+        videoPlayOverlay = findViewById(R.id.video_play_overlay);
         textItemTitleDetail = findViewById(R.id.text_item_title_detail);
         textItemCategoryDetail = findViewById(R.id.text_item_category_detail);
         textItemLocationDetail = findViewById(R.id.text_item_location_detail);
@@ -77,25 +91,22 @@ public class ItemDetailActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
             getSupportActionBar().setTitle(currentItem.getTitle());
         }
     }
 
-    private void populateItemDetails() {
-        // Load item image with Glide
-        if (currentItem.getImageUrl() != null && !currentItem.getImageUrl().isEmpty()) {
-            Glide.with(this)
-                    .load(currentItem.getImageUrl())
-                    .apply(new RequestOptions()
-                            .placeholder(R.drawable.placeholder_image)
-                            .error(R.drawable.placeholder_image)
-                            .transform(new RoundedCorners(16)))
-                    .into(imageItemDetail);
-        } else {
-            imageItemDetail.setImageResource(R.drawable.placeholder_image);
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Disable menu to remove the three dots on top
+        return false;
+    }
 
+    private void populateItemDetails() {
+        // Setup media gallery
+        setupMediaGallery();
+        
         // Set item details
         textItemTitleDetail.setText(currentItem.getTitle());
         
@@ -115,13 +126,111 @@ public class ItemDetailActivity extends AppCompatActivity {
         String formattedDate = "Posted on " + dateFormat.format(new Date(currentItem.getCreatedAt()));
         textItemDateDetail.setText(formattedDate);
 
-        // Set owner information
-        textOwnerName.setText(currentItem.getOwner());
+        // Set owner information - check if this is the current user's item
+        String currentUserId = getCurrentUserId();
+        String ownerName = "Item Owner";
+        String ownerEmail = "Contact via app";
+        String ownerPhone = currentItem.getContactNumber();
         
-        // For demo purposes, we'll show placeholder contact info
-        // In a real app, this would come from the user profile
-        textOwnerEmail.setText(currentItem.getOwner().toLowerCase().replace(" ", ".") + "@example.com");
-        textOwnerPhone.setText(currentItem.getContactNumber());
+        if (currentUserId != null && currentUserId.equals(currentItem.getOwnerId())) {
+            // This is the current user's item - show their info
+            String userEmail = getCurrentUserEmail();
+            String userName = getCurrentUserName();
+            
+            ownerName = userName != null ? userName : "You";
+            ownerEmail = userEmail != null ? userEmail : "Your email";
+        } else {
+            // This is someone else's item - show limited contact info
+            ownerName = "Contact Owner";
+            ownerEmail = "Contact via app messaging";
+        }
+        
+        textOwnerName.setText(ownerName);
+        textOwnerEmail.setText(ownerEmail);
+        textOwnerPhone.setText(ownerPhone != null && !ownerPhone.isEmpty() ? ownerPhone : "Contact via app");
+    }
+
+    private void setupMediaGallery() {
+        List<MediaAdapter.MediaItem> mediaItems = new ArrayList<>();
+        
+        android.util.Log.d("ItemDetailActivity", "Setting up media gallery for item: " + currentItem.getTitle());
+        
+        // Add images from imageUrls list (if available)
+        if (currentItem.getImageUrls() != null && !currentItem.getImageUrls().isEmpty()) {
+            android.util.Log.d("ItemDetailActivity", "Found " + currentItem.getImageUrls().size() + " image URLs");
+            for (String imageUrl : currentItem.getImageUrls()) {
+                if (imageUrl != null && !imageUrl.isEmpty()) {
+                    android.util.Log.d("ItemDetailActivity", "Adding image: " + imageUrl);
+                    mediaItems.add(new MediaAdapter.MediaItem(imageUrl, false));
+                }
+            }
+        } else if (currentItem.getImageUrl() != null && !currentItem.getImageUrl().isEmpty()) {
+            // Fallback to single image URL for backward compatibility
+            android.util.Log.d("ItemDetailActivity", "Using fallback single image URL: " + currentItem.getImageUrl());
+            mediaItems.add(new MediaAdapter.MediaItem(currentItem.getImageUrl(), false));
+        } else {
+            android.util.Log.w("ItemDetailActivity", "No image URLs found");
+        }
+        
+        // Add video if available
+        if (currentItem.getVideoUrl() != null && !currentItem.getVideoUrl().isEmpty()) {
+            android.util.Log.d("ItemDetailActivity", "Adding video: " + currentItem.getVideoUrl());
+            mediaItems.add(new MediaAdapter.MediaItem(currentItem.getVideoUrl(), true));
+        } else {
+            android.util.Log.w("ItemDetailActivity", "No video URL found");
+        }
+        
+        // If no media available, show placeholder
+        if (mediaItems.isEmpty()) {
+            android.util.Log.w("ItemDetailActivity", "No media found, showing placeholder");
+            mediaItems.add(new MediaAdapter.MediaItem("", false)); // Empty URL will show placeholder
+        }
+        
+        android.util.Log.d("ItemDetailActivity", "Total media items: " + mediaItems.size());
+        
+        // Setup adapter
+        mediaAdapter = new MediaAdapter(this, mediaItems);
+        mediaViewPager.setAdapter(mediaAdapter);
+        
+        // Setup indicators if more than one media item
+        if (mediaItems.size() > 1) {
+            setupMediaIndicators(mediaItems.size());
+        } else {
+            mediaIndicators.setVisibility(View.GONE);
+        }
+    }
+    
+    private void setupMediaIndicators(int count) {
+        mediaIndicators.removeAllViews();
+        mediaIndicators.setVisibility(View.VISIBLE);
+        
+        for (int i = 0; i < count; i++) {
+            ImageView indicator = new ImageView(this);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                getResources().getDimensionPixelSize(R.dimen.indicator_size),
+                getResources().getDimensionPixelSize(R.dimen.indicator_size)
+            );
+            params.setMargins(4, 0, 4, 0);
+            indicator.setLayoutParams(params);
+            indicator.setImageResource(i == 0 ? R.drawable.indicator_selected : R.drawable.indicator_unselected);
+            mediaIndicators.addView(indicator);
+        }
+        
+        // Update indicators when page changes
+        mediaViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                updateIndicators(position);
+            }
+        });
+    }
+    
+    private void updateIndicators(int selectedPosition) {
+        for (int i = 0; i < mediaIndicators.getChildCount(); i++) {
+            ImageView indicator = (ImageView) mediaIndicators.getChildAt(i);
+            indicator.setImageResource(i == selectedPosition ? R.drawable.indicator_selected : R.drawable.indicator_unselected);
+        }
     }
 
     private void setupClickListeners() {
@@ -227,6 +336,53 @@ public class ItemDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+    
+    /**
+     * Get current user ID from Supabase
+     */
+    private String getCurrentUserId() {
+        try {
+            var currentUser = SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
+            return currentUser != null ? currentUser.getId() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Get current user email from Supabase
+     */
+    private String getCurrentUserEmail() {
+        try {
+            var currentUser = SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
+            return currentUser != null ? currentUser.getEmail() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Get current user name from Supabase metadata
+     */
+    private String getCurrentUserName() {
+        try {
+            var currentUser = SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
+            if (currentUser != null && currentUser.getUserMetadata() != null) {
+                Object fullName = currentUser.getUserMetadata().get("full_name");
+                if (fullName != null) {
+                    return fullName.toString();
+                }
+                // Fallback to email username if no full name
+                String email = currentUser.getEmail();
+                if (email != null) {
+                    return email.split("@")[0]; // Use part before @ as name
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
 

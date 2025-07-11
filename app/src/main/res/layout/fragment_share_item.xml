@@ -149,14 +149,33 @@
             android:visibility="gone"
             android:background="@color/background_accent"
             android:padding="4dp">
-            <TextView
-                android:id="@+id/text_expiry"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Set Food Expiry Time"
-                android:textColor="@color/text_color"
-                android:textSize="12sp"
-                android:textStyle="bold"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                
+                <TextView
+                    android:id="@+id/text_expiry"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Set Food Expiry Time"
+                    android:textColor="@color/text_color"
+                    android:textSize="12sp"
+                    android:textStyle="bold"/>
+                
+                <ImageButton
+                    android:id="@+id/btn_expiry_info"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@android:drawable/ic_dialog_info"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Info about auto-deletion"
+                    android:tint="@color/aston_green"/>
+                
+            </LinearLayout>
             <RadioGroup
                 android:id="@+id/radio_group_time_unit"
                 android:layout_width="match_parent"
@@ -265,6 +284,16 @@
                 android:textSize="12sp"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Location Selection Button -->
+        <Button
+            android:id="@+id/btn_select_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Select Location"
+            android:backgroundTint="@color/aston_green"
+            android:textColor="@android:color/white" />
 
         <!-- Suggested Locations RecyclerView -->
         <TextView

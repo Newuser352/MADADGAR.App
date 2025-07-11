@@ -18,18 +18,24 @@
     
     <!-- Headline Text Styles -->
     <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.MaterialComponents.Headline4">
-        <item name="android:textSize">22sp</item>
+        <item name="android:textSize">24sp</item>
         <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
     </style>
     
     <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textSize">20sp</item>
         <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
     </style>
     
     <style name="TextAppearance.App.HeadlineSmall" parent="TextAppearance.MaterialComponents.Headline6">
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
     </style>
     
     <!-- Title Text Styles -->
@@ -51,12 +57,16 @@
     <!-- Body Text Styles -->
     <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/roboto</item>
+        <item name="android:lineSpacingMultiplier">1.4</item>
     </style>
     
     <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/roboto</item>
+        <item name="android:lineSpacingMultiplier">1.4</item>
     </style>
     
     <style name="TextAppearance.App.BodySmall" parent="TextAppearance.MaterialComponents.Caption">

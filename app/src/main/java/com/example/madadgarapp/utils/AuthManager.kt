@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
+import io.github.jan.supabase.gotrue.SessionStatus
 
 
 /**
@@ -107,12 +109,36 @@ class AuthManager @Inject constructor(
      */
     init {
         Log.d(TAG, "AuthManager initialized")
+        // Start monitoring session status immediately
+        startSessionMonitoring()
+        // Check initial authentication status
         checkAuthenticationStatus()
     }
     
-    
-    
-    
+    /**
+     * Start monitoring authentication status with periodic checks
+     */
+    private fun startSessionMonitoring() {
+        viewModelScope.launch(exceptionHandler) {
+            try {
+                Log.d(TAG, "Starting authentication monitoring...")
+                
+                // Initial check
+                checkAuthenticationStatusInternal()
+                
+                // Periodic checks every 30 seconds to ensure session persistence
+                while (true) {
+                    delay(30000) // 30 seconds
+                    checkAuthenticationStatusInternal()
+                }
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in authentication monitoring", e)
+                // Fallback to manual checking if monitoring fails
+                checkAuthenticationStatus()
+            }
+        }
+    }
     
     /**
      * Sign in with email and password
@@ -305,24 +331,53 @@ class AuthManager @Inject constructor(
      */
     private fun checkAuthenticationStatus() {
         viewModelScope.launch(exceptionHandler) {
-            try {
-                val currentUser = SupabaseClient.AuthHelper.getCurrentUser()
-                if (currentUser != null) {
-                    _currentUser.value = UserInfo(
-                        id = currentUser.id,
-                        email = currentUser.email,
-                        name = currentUser.userMetadata?.get("full_name")?.toString(),
-                        photoUrl = null,
-                        provider = "email"
-                    )
-                    _authState.value = AuthState.Authenticated
-                    _authLiveData.value = AuthState.Authenticated
-                } else {
-                    _authState.value = AuthState.Unauthenticated
-                    _authLiveData.value = AuthState.Unauthenticated
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error checking authentication status", e)
+            checkAuthenticationStatusInternal()
+        }
+    }
+    
+    /**
+     * Internal method to check authentication status with proper session restoration
+     */
+    private suspend fun checkAuthenticationStatusInternal() {
+        try {
+            Log.d(TAG, "Checking authentication status...")
+            
+            // First check if we have a current session
+            val currentSession = SupabaseClient.AuthHelper.getCurrentSession()
+            val currentUser = SupabaseClient.AuthHelper.getCurrentUser()
+            
+            Log.d(TAG, "Current session: ${currentSession != null}")
+            Log.d(TAG, "Current user: ${currentUser != null}")
+            
+            if (currentUser != null && currentSession != null) {
+                // User is authenticated and has a valid session
+                Log.d(TAG, "User authenticated with valid session")
+                
+                _currentUser.value = UserInfo(
+                    id = currentUser.id,
+                    email = currentUser.email,
+                    name = currentUser.userMetadata?.get("full_name")?.toString(),
+                    photoUrl = null,
+                    provider = "supabase"
+                )
+                _authState.value = AuthState.Authenticated
+                _authLiveData.value = AuthState.Authenticated
+                
+            } else {
+                // No valid session or user found
+                Log.d(TAG, "No valid session or user found - setting unauthenticated")
+                
+                _currentUser.value = null
+                _authState.value = AuthState.Unauthenticated
+                _authLiveData.value = AuthState.Unauthenticated
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking authentication status", e)
+            
+            // Only set error state if we can't determine the auth status at all
+            // Otherwise, keep the current state to avoid unnecessary logouts
+            if (_authState.value == AuthState.Loading) {
                 _authState.value = AuthState.Error(e.message ?: "Error checking authentication status")
                 _authLiveData.value = AuthState.Error(e.message ?: "Error checking authentication status")
             }

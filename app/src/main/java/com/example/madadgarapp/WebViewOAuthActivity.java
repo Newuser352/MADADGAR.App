@@ -31,7 +31,7 @@ public class WebViewOAuthActivity extends AppCompatActivity {
         initViews();
         
         // Initialize auth helper
-        authHelper = new SupabaseAuth();
+        authHelper = new SupabaseAuth(this);
         
         // Get intent data
         Intent intent = getIntent();
