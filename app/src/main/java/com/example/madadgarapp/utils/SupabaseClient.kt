@@ -269,6 +269,40 @@ object SupabaseClient {
         }
         
         /**
+         * Send password reset email
+         * 
+         * @param email User's email address
+         * @return Result indicating success or failure
+         */
+        suspend fun sendPasswordResetEmail(email: String): Result<String> {
+            return withContext(Dispatchers.IO) {
+                try {
+                    Log.d(TAG, "=== SENDING PASSWORD RESET EMAIL ===")
+                    Log.d(TAG, "Email: $email")
+                    
+                    // Send password reset email using Supabase Auth
+                    client.auth.resetPasswordForEmail(email)
+                    
+                    Log.d(TAG, "Password reset email sent successfully")
+                    Result.success("Password reset email sent! Please check your inbox and follow the instructions to reset your password.")
+                    
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to send password reset email", e)
+                    val errorMessage = when {
+                        e.message?.contains("Invalid email", ignoreCase = true) == true -> 
+                            "Please enter a valid email address"
+                        e.message?.contains("User not found", ignoreCase = true) == true -> 
+                            "No account found with this email address"
+                        e.message?.contains("rate limit", ignoreCase = true) == true -> 
+                            "Too many requests. Please wait a few minutes before trying again"
+                        else -> "Failed to send password reset email. Please try again later."
+                    }
+                    Result.failure(Exception(errorMessage))
+                }
+            }
+        }
+        
+        /**
          * Get current authenticated user
          * 
          * @return Current user or null if not authenticated
@@ -330,6 +364,47 @@ object SupabaseClient {
                     // Switch to main thread for callback
                     withContext(Dispatchers.Main) {
                         callback.onError(e.message ?: "Exception during Google sign-in")
+                    }
+                } finally {
+                    // Clean up the coroutine scope
+                    scope.cancel()
+                }
+            }
+        }
+        
+        /**
+         * Java-friendly password reset method with callback
+         * 
+         * @param email User's email address
+         * @param callback Callback to handle success/failure
+         */
+        @JvmStatic
+        fun sendPasswordResetEmailCallback(email: String, callback: AuthCallback) {
+            // Create a coroutine scope for this operation
+            val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+            
+            scope.launch {
+                try {
+                    val result = sendPasswordResetEmail(email)
+                    
+                    if (result.isSuccess) {
+                        val message = result.getOrNull() ?: "Password reset email sent successfully"
+                        // Switch to main thread for callback
+                        withContext(Dispatchers.Main) {
+                            callback.onSuccess(message)
+                        }
+                    } else {
+                        val error = result.exceptionOrNull()
+                        val errorMessage = error?.message ?: "Failed to send password reset email"
+                        // Switch to main thread for callback
+                        withContext(Dispatchers.Main) {
+                            callback.onError(errorMessage)
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Switch to main thread for callback
+                    withContext(Dispatchers.Main) {
+                        callback.onError(e.message ?: "Exception during password reset")
                     }
                 } finally {
                     // Clean up the coroutine scope

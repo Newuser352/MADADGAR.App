@@ -111,6 +111,7 @@
 
         <!-- Forgot Password Link -->
         <TextView
+            android:id="@+id/forgot_password_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Forgot Password?"

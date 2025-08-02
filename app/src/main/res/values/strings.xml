@@ -24,6 +24,9 @@
     <string name="welcome_back">Welcome Back</string>
     <string name="app_tagline">Share. Connect. Help.</string>
     
+    <!-- Saved Posts -->
+    <string name="saved_posts">Saved Posts</string>
+    
     <!-- Navigation -->
     <string name="navigation_items">Home</string>
     <string name="navigation_share_item">Share Item</string>

@@ -57,6 +57,7 @@ import io.github.jan.supabase.gotrue.SessionStatus
  */
 @HiltViewModel
 class AuthManager @Inject constructor(
+    private val fcmTokenManager: FCMTokenManager
 ) : ViewModel() {
     
     companion object {
@@ -181,6 +182,9 @@ class AuthManager @Inject constructor(
                         
                         _authState.value = AuthState.Authenticated
                         _authLiveData.value = AuthState.Authenticated
+                        
+                        // Initialize FCM token after successful login
+                        initializeFCMToken()
                     },
                     onFailure = { exception ->
                         Log.e(TAG, "Sign in failed", exception)
@@ -281,6 +285,9 @@ class AuthManager @Inject constructor(
                         
                         _authState.value = AuthState.Authenticated
                         _authLiveData.value = AuthState.Authenticated
+                        
+                        // Initialize FCM token after successful signup
+                        initializeFCMToken()
                     },
                     onFailure = { exception ->
                         Log.e(TAG, "Sign up failed", exception)
@@ -308,6 +315,9 @@ class AuthManager @Inject constructor(
                 
                 result.fold(
                     onSuccess = {
+                        // Remove FCM token before signing out
+                        fcmTokenManager.removeFCMToken()
+                        
                         _currentUser.value = null
                         _authState.value = AuthState.Unauthenticated
                         _authLiveData.value = AuthState.Unauthenticated
@@ -362,6 +372,9 @@ class AuthManager @Inject constructor(
                 )
                 _authState.value = AuthState.Authenticated
                 _authLiveData.value = AuthState.Authenticated
+                
+                // Initialize FCM token for existing authenticated user
+                initializeFCMToken()
                 
             } else {
                 // No valid session or user found
@@ -428,6 +441,9 @@ class AuthManager @Inject constructor(
                 _authState.value = AuthState.Authenticated
                 _authLiveData.value = AuthState.Authenticated
                 
+                // Initialize FCM token for Google Sign-In user
+                initializeFCMToken()
+                
                 Log.d(TAG, "User authentication state updated successfully")
                 
             } catch (e: Exception) {
@@ -435,6 +451,23 @@ class AuthManager @Inject constructor(
                 _authState.value = AuthState.Error(e.message ?: "Error setting user authentication")
                 _authLiveData.value = AuthState.Error(e.message ?: "Error setting user authentication")
             }
+        }
+    }
+    
+    /**
+     * Initialize FCM token for push notifications
+     */
+    private fun initializeFCMToken() {
+        Log.d(TAG, "Initializing FCM token for push notifications...")
+        try {
+            fcmTokenManager.initializeFCMToken()
+            
+            // Also subscribe to general topics for app-wide notifications
+            fcmTokenManager.subscribeToTopic("new_listings")
+            fcmTokenManager.subscribeToTopic("app_updates")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing FCM token", e)
         }
     }
 }

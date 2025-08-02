@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.savedstate)          // SavedState for ViewModel
     
     // UI Components
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation(libs.material)          // Material Design components
     implementation(libs.constraintlayout)  // ConstraintLayout for responsive UI
     

@@ -256,6 +256,7 @@ public class ItemRepositoryBridge {
             contact1,
             contact2,
             userId,
+            null, // ownerEmail
             expiresAt,
             imageUrls != null ? imageUrls : java.util.Collections.emptyList(),
             videoUrl

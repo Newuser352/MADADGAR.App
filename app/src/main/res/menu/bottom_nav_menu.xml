@@ -16,6 +16,11 @@
         android:title="My Posts" />
 
     <item
+        android:id="@+id/navigation_notifications"
+        android:icon="@drawable/ic_notification"
+        android:title="Notifications" />
+
+    <item
         android:id="@+id/navigation_account"
         android:icon="@drawable/ic_nav_account"
         android:title="Profile" />

@@ -1,0 +1,53 @@
+============================================================
+MADADGAR APP - CODE ANALYSIS REPORT
+============================================================
+
+⚠️  Found 25 potential code issues
+
+## Memory Leaks (20 issues)
+
+  📁 app\src\main\java\com\example\madadgarapp\AuthSelectionActivity.java:33
+     private static final String TAG = "AuthSelectionActivity";
+
+  📁 app\src\main\java\com\example\madadgarapp\LoginActivity.java:18
+     private static final String TAG = "LoginActivity";
+
+  📁 app\src\main\java\com\example\madadgarapp\SignupActivity.java:18
+     private static final String TAG = "SignupActivity";
+
+  📁 app\src\main\java\com\example\madadgarapp\utils\FavoriteManager.java:25
+     private static SharedPreferences prefs(Context context) {
+
+  📁 app\src\main\java\com\example\madadgarapp\utils\FavoriteManager.java:33
+     public static boolean isFavorite(Context ctx, String itemId) {
+
+     ... and 15 more
+
+## Null Pointer Risk (5 issues)
+
+  📁 app\src\main\java\com\example\madadgarapp\ShareItemFragment.java:685
+     imagePreview.setImageURI(selectedPhotoUris.get(0));
+
+  📁 app\src\main\java\com\example\madadgarapp\ShareItemFragment.java:713
+     imagePreview.setImageURI(selectedPhotoUris.get(0));
+
+  📁 app\src\main\java\com\example\madadgarapp\fragments\ItemsFragment.java:338
+     coverImageUrl = supabaseItem.getImageUrls().get(0);
+
+  📁 app\src\main\java\com\example\madadgarapp\fragments\MyPostsFragment.java:185
+     imageUrl = supabaseItem.getImageUrls().get(0);
+
+  📁 app\src\main\java\com\example\madadgarapp\fragments\SavedPostsFragment.java:144
+     coverImage = supabaseItem.getImageUrls().get(0);
+
+============================================================
+RECOMMENDATIONS FOR TESTING
+============================================================
+
+1. Focus testing on files with potential issues above
+2. Test edge cases: empty data, network failures, permission denials
+3. Use 'adb logcat' to monitor for crashes during testing
+4. Test on different Android versions if possible
+5. Test with low memory conditions
+
+Run the testing checklist systematically!

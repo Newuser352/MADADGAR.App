@@ -126,28 +126,40 @@ public class ItemDetailActivity extends AppCompatActivity {
         String formattedDate = "Posted on " + dateFormat.format(new Date(currentItem.getCreatedAt()));
         textItemDateDetail.setText(formattedDate);
 
-        // Set owner information - check if this is the current user's item
+        // Set owner information - fetch user profile data
         String currentUserId = getCurrentUserId();
         String ownerName = "Item Owner";
-        String ownerEmail = "Contact via app";
+        String ownerEmail = currentItem.getOwnerEmail();
         String ownerPhone = currentItem.getContactNumber();
-        
+
+        // If this is the current user's own post, prefer their Supabase profile data
         if (currentUserId != null && currentUserId.equals(currentItem.getOwnerId())) {
-            // This is the current user's item - show their info
             String userEmail = getCurrentUserEmail();
             String userName = getCurrentUserName();
-            
-            ownerName = userName != null ? userName : "You";
-            ownerEmail = userEmail != null ? userEmail : "Your email";
+
+            if (userName != null && !userName.isEmpty()) {
+                ownerName = userName;
+            }
+            if (userEmail != null && !userEmail.isEmpty()) {
+                ownerEmail = userEmail;
+            }
         } else {
-            // This is someone else's item - show limited contact info
-            ownerName = "Contact Owner";
-            ownerEmail = "Contact via app messaging";
+            // For other users' posts, try to fetch their profile information
+            // This will be done asynchronously
+            fetchOwnerProfileAsync(currentItem.getOwnerId());
         }
-        
+
+        // Set initial values (will be updated if profile fetch is successful)
+        if (ownerEmail == null || ownerEmail.isEmpty()) {
+            ownerEmail = "Loading...";
+        }
+        if (ownerPhone == null || ownerPhone.isEmpty()) {
+            ownerPhone = "Loading...";
+        }
+
         textOwnerName.setText(ownerName);
         textOwnerEmail.setText(ownerEmail);
-        textOwnerPhone.setText(ownerPhone != null && !ownerPhone.isEmpty() ? ownerPhone : "Contact via app");
+        textOwnerPhone.setText(ownerPhone);
     }
 
     private void setupMediaGallery() {
@@ -383,6 +395,58 @@ public class ItemDetailActivity extends AppCompatActivity {
         } catch (Exception e) {
             return null;
         }
+    }
+    
+    /**
+     * Fetch owner profile information asynchronously
+     * This will update the UI when the profile data is available
+     */
+    private void fetchOwnerProfileAsync(String ownerId) {
+        // Create a background thread to fetch user profile
+        new Thread(() -> {
+            try {
+                // Get user information from Supabase Auth
+                // Note: This is a simplified approach. In a real app, you might want to 
+                // create a separate user profiles table with additional information
+                
+                // For now, we'll try to get the user's email and name from the item's contact info
+                // and from any stored user metadata if available
+                
+                String ownerEmail = currentItem.getOwnerEmail();
+                String ownerPhone = currentItem.getContactNumber();
+                String ownerName = "Item Owner";
+                
+                // Try to extract a name from the email if available
+                if (ownerEmail != null && !ownerEmail.isEmpty() && ownerEmail.contains("@")) {
+                    ownerName = ownerEmail.split("@")[0];
+                    // Capitalize first letter and replace dots/underscores with spaces
+                    ownerName = ownerName.replace(".", " ").replace("_", " ");
+                    ownerName = ownerName.substring(0, 1).toUpperCase() + ownerName.substring(1);
+                }
+                
+                // Update UI on main thread
+                final String finalOwnerName = ownerName;
+                final String finalOwnerEmail = ownerEmail != null && !ownerEmail.isEmpty() ? ownerEmail : "Not provided";
+                final String finalOwnerPhone = ownerPhone != null && !ownerPhone.isEmpty() ? ownerPhone : "Not provided";
+                
+                runOnUiThread(() -> {
+                    textOwnerName.setText(finalOwnerName);
+                    textOwnerEmail.setText(finalOwnerEmail);
+                    textOwnerPhone.setText(finalOwnerPhone);
+                });
+                
+            } catch (Exception e) {
+                android.util.Log.e("ItemDetailActivity", "Error fetching owner profile", e);
+                // Update UI with fallback values on main thread
+                runOnUiThread(() -> {
+                    String ownerEmail = currentItem.getOwnerEmail();
+                    String ownerPhone = currentItem.getContactNumber();
+                    
+                    textOwnerEmail.setText(ownerEmail != null && !ownerEmail.isEmpty() ? ownerEmail : "Not provided");
+                    textOwnerPhone.setText(ownerPhone != null && !ownerPhone.isEmpty() ? ownerPhone : "Not provided");
+                });
+            }
+        }).start();
     }
 }
 

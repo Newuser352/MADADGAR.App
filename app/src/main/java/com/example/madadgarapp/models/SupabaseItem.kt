@@ -27,6 +27,9 @@ data class SupabaseItem(
     val contact2: String? = null,
     @SerialName("owner_id")
     val ownerId: String,
+    @kotlinx.serialization.Transient
+    @SerialName("owner_email")
+    val ownerEmail: String? = null,
     @SerialName("created_at")
     val createdAt: String? = null,
     @SerialName("updated_at")
@@ -63,6 +66,9 @@ data class NewSupabaseItem(
     val contact2: String? = null,
     @SerialName("owner_id")
     val ownerId: String,
+    @kotlinx.serialization.Transient
+    @SerialName("owner_email")
+    val ownerEmail: String? = null,
     @SerialName("expires_at")
     val expiresAt: String? = null,
     @SerialName("image_urls")

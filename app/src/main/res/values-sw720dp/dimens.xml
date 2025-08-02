@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Example: scaling the indicator size up for 10" tablets and large tablets -->
+    <dimen name="indicator_size">16dp</dimen>
+    <!-- Add more dimension overrides as needed for extra-large screens -->
+</resources>
+

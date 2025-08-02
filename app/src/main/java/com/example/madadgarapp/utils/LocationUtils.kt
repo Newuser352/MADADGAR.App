@@ -33,6 +33,7 @@ object LocationUtils {
     /**
      * Check if location permissions are granted
      */
+    @JvmStatic
     fun hasLocationPermission(context: Context): Boolean {
         return ContextCompat.checkSelfPermission(
             context, 
@@ -91,6 +92,42 @@ object LocationUtils {
     }
     
     /**
+     * Get current location synchronously (blocking call)
+     * Use this from background thread only
+     */
+    @JvmStatic
+    fun getCurrentLocationSync(context: Context): Coordinates? {
+        if (!hasLocationPermission(context)) {
+            Log.w(TAG, "Location permission not granted")
+            return null
+        }
+        
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        
+        try {
+            val locationTask = fusedLocationClient.getCurrentLocation(
+                Priority.PRIORITY_HIGH_ACCURACY,
+                null
+            )
+            
+            // Wait for the task to complete (blocking call)
+            val location = com.google.android.gms.tasks.Tasks.await(locationTask)
+            
+            return if (location != null) {
+                val coordinates = Coordinates(location.latitude, location.longitude)
+                Log.d(TAG, "Current location (sync): $coordinates")
+                coordinates
+            } else {
+                Log.w(TAG, "Location is null (sync)")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception getting current location (sync)", e)
+            return null
+        }
+    }
+    
+    /**
      * Calculate distance between two coordinates using Haversine formula
      * @param lat1 First latitude
      * @param lon1 First longitude
@@ -98,6 +135,7 @@ object LocationUtils {
      * @param lon2 Second longitude
      * @return Distance in kilometers
      */
+    @JvmStatic
     fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val earthRadius = 6371.0 // Earth's radius in kilometers
         
@@ -116,6 +154,7 @@ object LocationUtils {
     /**
      * Calculate distance between two Coordinates objects
      */
+    @JvmStatic
     fun calculateDistance(coord1: Coordinates, coord2: Coordinates): Double {
         return calculateDistance(coord1.latitude, coord1.longitude, coord2.latitude, coord2.longitude)
     }
@@ -134,6 +173,7 @@ object LocationUtils {
     /**
      * Check if coordinates are within a certain radius
      */
+    @JvmStatic
     fun isWithinRadius(
         center: Coordinates,
         point: Coordinates,
@@ -141,6 +181,35 @@ object LocationUtils {
     ): Boolean {
         val distance = calculateDistance(center, point)
         return distance <= radiusKm
+    }
+    
+    /**
+     * Calculate bounding box from center coordinates and radius
+     * @param center Center coordinates
+     * @param radiusKm Radius in kilometers
+     * @return BoundingBox with min/max lat/lng
+     */
+    data class BoundingBox(
+        val minLat: Double,
+        val maxLat: Double,
+        val minLng: Double,
+        val maxLng: Double
+    )
+    
+    fun calculateBoundingBox(center: Coordinates, radiusKm: Double): BoundingBox {
+        // Earth's radius in kilometers
+        val earthRadiusKm = 6371.0
+        
+        // Calculate lat/lng deltas
+        val latDelta = Math.toDegrees(radiusKm / earthRadiusKm)
+        val lngDelta = Math.toDegrees(radiusKm / (earthRadiusKm * cos(Math.toRadians(center.latitude))))
+        
+        return BoundingBox(
+            minLat = center.latitude - latDelta,
+            maxLat = center.latitude + latDelta,
+            minLng = center.longitude - lngDelta,
+            maxLng = center.longitude + lngDelta
+        )
     }
     
     /**
@@ -197,6 +266,7 @@ object LocationUtils {
     /**
      * Required permissions for location features
      */
+    @JvmField
     val REQUIRED_PERMISSIONS = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION

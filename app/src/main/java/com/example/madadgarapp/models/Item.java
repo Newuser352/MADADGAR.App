@@ -11,7 +11,11 @@ public class Item implements java.io.Serializable {
     private String mainCategory;
     private String subCategory;
     private String location;
+    // Geographic coordinates (nullable for legacy items)
+    private Double latitude;
+    private Double longitude;
     private String contactNumber;
+    private String ownerEmail;
     private String imageUrl;
     private java.util.List<String> imageUrls;
     private String videoUrl;
@@ -19,24 +23,48 @@ public class Item implements java.io.Serializable {
     private long createdAt;
     private long expiryTime;
 
+    // Number of times this item has been viewed – used for "POPULAR" badge
+    private int viewCount;
+
     // Empty constructor for Firebase
     public Item() {
     }
 
+    // Constructor with coordinates
     public Item(String id, String title, String description, String mainCategory, 
-                String subCategory, String location, String contactNumber, 
-                String imageUrl, String ownerId, long createdAt, long expiryTime) {
+                String subCategory, String location, Double latitude, Double longitude,
+                String contactNumber, String ownerEmail, String imageUrl, String ownerId, long createdAt, long expiryTime) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.mainCategory = mainCategory;
         this.subCategory = subCategory;
         this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.contactNumber = contactNumber;
+        this.ownerEmail = ownerEmail;
         this.imageUrl = imageUrl;
         this.ownerId = ownerId;
         this.createdAt = createdAt;
         this.expiryTime = expiryTime;
+    }
+
+    // Legacy constructor without coordinates for backward compatibility
+    public Item(String id, String title, String description, String mainCategory, 
+                String subCategory, String location, String contactNumber,
+                String imageUrl, String ownerId, long createdAt, long expiryTime) {
+        this(id, title, description, mainCategory, subCategory, location, null, null,
+             contactNumber, null, imageUrl, ownerId, createdAt, expiryTime);
+    }
+
+    // Legacy constructor that already included ownerEmail (still kept for calls that supply it)
+    // Legacy constructor without coordinates for backward compatibility
+    public Item(String id, String title, String description, String mainCategory, 
+                String subCategory, String location, String contactNumber, String ownerEmail,
+                String imageUrl, String ownerId, long createdAt, long expiryTime) {
+        this(id, title, description, mainCategory, subCategory, location, null, null,
+             contactNumber, ownerEmail, imageUrl, ownerId, createdAt, expiryTime);
     }
 
     // Getters and setters
@@ -86,6 +114,30 @@ public class Item implements java.io.Serializable {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
     }
 
     public String getContactNumber() {
@@ -175,6 +227,21 @@ public class Item implements java.io.Serializable {
 
     public long getTimestamp() {
         return createdAt;
+    }
+
+    public int getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    /**
+     * Compatibility getter for older code – same as {@link #getViewCount()}.
+     */
+    public int viewCount() {
+        return viewCount;
     }
 
     public long getExpiration() {

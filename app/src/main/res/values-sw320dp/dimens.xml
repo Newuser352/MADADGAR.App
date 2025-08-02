@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Example: scaling the indicator size down for very small phones/low-res devices -->
+    <dimen name="indicator_size">6dp</dimen>
+    <!-- Add more dimension overrides as needed for small screens -->
+</resources>
+

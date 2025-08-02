@@ -265,6 +265,59 @@ class ItemRepository {
     }
     
     /**
+     * Get active items within a bounding box (for location-based filtering)
+     * 
+     * @param minLat Minimum latitude
+     * @param maxLat Maximum latitude
+     * @param minLng Minimum longitude
+     * @param maxLng Maximum longitude
+     * @param limit Maximum number of items to fetch
+     * @param offset Offset for pagination
+     * @return List of active items within the bounding box
+     */
+    suspend fun getActiveItemsInBoundingBox(
+        minLat: Double,
+        maxLat: Double,
+        minLng: Double,
+        maxLng: Double,
+        limit: Int = 50,
+        offset: Int = 0
+    ): Result<List<SupabaseItem>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d(TAG, "Fetching active items in bounding box (lat: $minLat-$maxLat, lng: $minLng-$maxLng)")
+                
+                // Fetch all items and filter by bounding box
+                // This could be optimized with PostGIS queries in the future
+                val allItems = SupabaseClient.client
+                    .from(ITEMS_TABLE)
+                    .select()
+                    .decodeList<SupabaseItem>()
+                
+                val filteredItems = allItems.filter { item ->
+                    item.isActive && 
+                    item.latitude != null && 
+                    item.longitude != null &&
+                    item.latitude >= minLat &&
+                    item.latitude <= maxLat &&
+                    item.longitude >= minLng &&
+                    item.longitude <= maxLng
+                }
+                    .sortedByDescending { it.createdAt }
+                    .drop(offset)
+                    .take(limit)
+                
+                Log.d(TAG, "Successfully fetched ${filteredItems.size} active items in bounding box")
+                Result.success(filteredItems)
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching active items in bounding box", e)
+                Result.failure(e)
+            }
+        }
+    }
+    
+    /**
      * Delete an item (marks as inactive)
      * 
      * @param itemId ID of the item to delete

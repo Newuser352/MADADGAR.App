@@ -29,6 +29,7 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
     private List<Item> allItems = new ArrayList<>();
     private String currentQuery = "";
     private String currentCategory = "";
+    private com.example.madadgarapp.utils.LocationUtils.Coordinates currentLocation;
 
     public interface OnItemClickListener {
         void onItemClick(Item item);
@@ -76,6 +77,11 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
         filterItems();
     }
 
+    public void setCurrentLocation(com.example.madadgarapp.utils.LocationUtils.Coordinates location) {
+        this.currentLocation = location;
+        filterItems();
+    }
+
     public void filterItems(String query, String category) {
         currentQuery = query != null ? query.toLowerCase() : "";
         currentCategory = category;
@@ -85,8 +91,17 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
     private void filterItems() {
         List<Item> filteredList = new ArrayList<>();
         
+        double radiusKm = 0.5; // 500 m
         for (Item item : allItems) {
-            if (item.matchesFilters(currentQuery, currentCategory)) {
+            boolean matchesText = item.matchesFilters(currentQuery, currentCategory);
+            boolean withinRadius = true;
+            if (currentLocation != null && item.getLatitude() != null && item.getLongitude() != null) {
+                withinRadius = com.example.madadgarapp.utils.LocationUtils.isWithinRadius(
+                        currentLocation,
+                        new com.example.madadgarapp.utils.LocationUtils.Coordinates(item.getLatitude(), item.getLongitude()),
+                        radiusKm);
+            }
+            if (matchesText && withinRadius) {
                 filteredList.add(item);
             }
         }
@@ -101,6 +116,10 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
     public boolean hasActiveFilters() {
         return !currentQuery.isEmpty() || !currentCategory.isEmpty();
     }
+    
+    public List<Item> getAllItems() {
+        return new ArrayList<>(allItems);
+    }
 
     static class ItemViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imageItem;
@@ -109,6 +128,8 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
         private final TextView textItemLocation;
         private final TextView textItemDescription;
         private final TextView textItemTime;
+        private final ImageView imageFavorite;
+        private final TextView textItemBadge;
 
         public ItemViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -118,9 +139,13 @@ public class ItemAdapter extends ListAdapter<Item, ItemAdapter.ItemViewHolder> {
             textItemLocation = itemView.findViewById(R.id.text_item_location);
             textItemDescription = itemView.findViewById(R.id.text_item_description);
             textItemTime = itemView.findViewById(R.id.text_item_time);
+            imageFavorite = itemView.findViewById(R.id.image_favorite);
+            textItemBadge = itemView.findViewById(R.id.text_item_badge);
         }
 
 public void bind(final Item item, final OnItemClickListener listener) {
+            long now = System.currentTimeMillis();
+            final long ONE_HOUR = 60 * 60 * 1000L;
             textItemTitle.setText(item.getTitle());
             textItemCategory.setText(item.getFullCategory());
             textItemLocation.setText(item.getLocation());
@@ -129,6 +154,30 @@ public void bind(final Item item, final OnItemClickListener listener) {
             CharSequence relativeTime = TimeUtils.getRelativeTimeString(item.getCreatedAt());
             textItemTime.setText(relativeTime);
             
+            // Favourite icon state
+            boolean isFav = com.example.madadgarapp.utils.FavoriteManager.isFavorite(itemView.getContext(), item.getId());
+            imageFavorite.setImageResource(isFav ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+            imageFavorite.setOnClickListener(v -> {
+                boolean newState = com.example.madadgarapp.utils.FavoriteManager.toggleFavorite(v.getContext(), item.getId());
+                imageFavorite.setImageResource(newState ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+            });
+
+            // Badge logic
+            String badgeText = null;
+            if (item.getCreatedAt() >= now - 24 * ONE_HOUR) {
+                badgeText = "NEW";
+            } else if (item.getExpiration() > 0 && item.getExpiration() - now <= 12 * ONE_HOUR) {
+                badgeText = "EXPIRING";
+            } else if (item.getViewCount() >= 100) { // threshold for popularity
+                badgeText = "POPULAR";
+            }
+            if (badgeText != null) {
+                textItemBadge.setText(badgeText);
+                textItemBadge.setVisibility(View.VISIBLE);
+            } else {
+                textItemBadge.setVisibility(View.GONE);
+            }
+
             // Load image using Glide
             Glide.with(imageItem.getContext())
                     .load(item.getImageUrl())

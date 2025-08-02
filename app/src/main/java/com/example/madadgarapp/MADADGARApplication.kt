@@ -13,7 +13,7 @@ import dagger.hilt.android.HiltAndroidApp
  * that need to be available throughout the app's lifecycle.
  */
 @HiltAndroidApp
-class MADADGARApplication : Application() {
+open class MADADGARApplication : Application() {
     
     companion object {
         private const val TAG = "MADADGARApplication"

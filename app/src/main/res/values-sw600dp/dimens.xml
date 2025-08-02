@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Example: scaling the indicator size up for sw600dp (7" tablets, small tablets, etc.) -->
+    <dimen name="indicator_size">12dp</dimen>
+    <!-- Add more dimension overrides as needed for tablet layouts, e.g.:
+         <dimen name="margin_medium">24dp</dimen> -->
+</resources>
+

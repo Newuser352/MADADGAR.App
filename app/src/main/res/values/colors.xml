@@ -100,4 +100,9 @@
     <color name="button_color">@color/button_primary</color>
     <color name="button_text_color">@color/button_primary_text</color>
     <color name="button_background">@color/button_primary</color>
+
+    <!-- Notification palette -->
+    <color name="purple_500">#6200EE</color>
+    <color name="gray">#9E9E9E</color>
+    <color name="red">#F44336</color>
 </resources>

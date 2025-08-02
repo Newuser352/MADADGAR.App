@@ -163,6 +163,17 @@ public class MyPostsFragment extends Fragment {
     /**
      * Convert SupabaseItem to Item for adapter compatibility
      */
+    private String determinePrimaryContact(SupabaseItem supabaseItem) {
+        String primaryContact = supabaseItem.getContactNumber();
+        if ((primaryContact == null || primaryContact.isEmpty()) && supabaseItem.getContact1() != null && !supabaseItem.getContact1().isEmpty()) {
+            primaryContact = supabaseItem.getContact1();
+        }
+        if ((primaryContact == null || primaryContact.isEmpty()) && supabaseItem.getContact2() != null && !supabaseItem.getContact2().isEmpty()) {
+            primaryContact = supabaseItem.getContact2();
+        }
+        return primaryContact;
+    }
+
     private Item convertSupabaseItemToItem(SupabaseItem supabaseItem) {
         // Parse timestamps using TimeUtils
         long createdAt = supabaseItem.getCreatedAt() != null ? TimeUtils.parseTimestamp(supabaseItem.getCreatedAt()) : System.currentTimeMillis();
@@ -181,7 +192,8 @@ public class MyPostsFragment extends Fragment {
             supabaseItem.getMainCategory(),
             supabaseItem.getSubCategory(),
             supabaseItem.getLocation(),
-            supabaseItem.getContactNumber(),
+            determinePrimaryContact(supabaseItem),
+            supabaseItem.getOwnerEmail(),
             imageUrl,
             supabaseItem.getOwnerId(),
             createdAt,

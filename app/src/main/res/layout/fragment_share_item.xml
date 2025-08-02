@@ -266,24 +266,6 @@
                 android:maxLines="4" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Item Location -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_item_location"
-            style="@style/Widget.App.TextInputLayout.Small"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:hint="Location"
-            app:startIconDrawable="@android:drawable/ic_menu_mylocation"
-            app:startIconTint="@color/aston_green"
-            app:boxBackgroundColor="@color/background_light">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_item_location"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:inputType="text" />
-        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Location Selection Button -->
         <Button
@@ -332,10 +314,10 @@
             android:text="Upload up to 6 photos and a video of your item"
             android:textColor="@color/text_color"
             android:textSize="10sp" />
-        <FrameLayout
+<FrameLayout
             android:id="@+id/layout_main_media_preview"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="80dp"
             android:layout_marginTop="2dp"
             android:background="@color/background_accent">
             <ImageView
@@ -410,28 +392,30 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:orientation="horizontal">
-            <com.google.android.material.button.MaterialButton
+<com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_upload_photo"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
                 android:text="Add Photos"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:layout_marginEnd="4dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 app:icon="@android:drawable/ic_menu_gallery"
                 app:iconGravity="textStart"
                 app:strokeColor="@color/aston_green"
                 android:textColor="@color/text_color"
                 app:iconTint="@color/aston_green" />
-            <com.google.android.material.button.MaterialButton
+<com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_upload_video"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
                 android:text="Add Video"
-                android:textSize="12sp"
+                android:textSize="10sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 app:icon="@android:drawable/ic_menu_camera"
                 app:iconGravity="textStart"
                 app:strokeColor="@color/aston_green"
@@ -488,20 +472,13 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="0dp">
-            <com.hbb20.CountryCodePicker
-                android:id="@+id/country_code_picker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:ccp_showNameCode="false"
-                app:ccp_autoDetectCountry="true"
-                app:ccp_showFullName="false" />
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_contact_number"
                 style="@style/Widget.App.TextInputLayout.Small"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:hint="Phone Number"
+                android:layout_marginStart="0dp"
+                android:hint="Phone Number *"
                 app:boxBackgroundColor="@color/background_light">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_contact_number"
@@ -515,7 +492,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Additional Contact Numbers (Optional)"
+            android:text="Additional Contact Number (Required)"
             android:textColor="@color/text_color"
             android:textSize="12sp" />
         <com.google.android.material.textfield.TextInputLayout
@@ -524,7 +501,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
-            android:hint="Primary Contact"
+            android:hint="Primary Contact *"
             app:startIconDrawable="@android:drawable/ic_menu_call"
             app:startIconTint="@color/aston_green"
             app:boxBackgroundColor="@color/background_light">
@@ -535,64 +512,8 @@
                 android:textSize="12sp"
                 android:inputType="phone" />
         </com.google.android.material.textfield.TextInputLayout>
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/til_contact2"
-            style="@style/Widget.App.TextInputLayout.Small"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="1dp"
-            android:hint="Secondary Contact"
-            app:startIconDrawable="@android:drawable/ic_menu_call"
-            app:startIconTint="@color/aston_green"
-            app:boxBackgroundColor="@color/background_light">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_contact2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:inputType="phone" />
-        </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Quick Contact Picks RecyclerView -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Quick Contact Picks"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp" />
-        
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_quick_contacts"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:orientation="horizontal"
-            android:scrollbars="horizontal"
-            android:clipToPadding="false"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp" />
 
-        <!-- Recently Shared Items RecyclerView -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Recently Shared Items"
-            android:textColor="@android:color/white"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp" />
-        
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_recent_items"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:layout_marginTop="2dp"
-            android:scrollbars="vertical"
-            android:clipToPadding="false"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp" />
 
         <!-- Sharing Tips Section -->
         <TextView

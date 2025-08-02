@@ -25,6 +25,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.example.madadgarapp.fragments.ItemsFragment;
 import com.example.madadgarapp.ShareItemFragment;
 import com.example.madadgarapp.fragments.MyPostsFragment;
+import com.example.madadgarapp.fragments.NotificationsFragment;
 import com.example.madadgarapp.fragments.AccountFragment;
 import com.example.madadgarapp.utils.AuthManager;
 
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private ItemsFragment itemsFragment;
     private ShareItemFragment shareItemFragment;
     private MyPostsFragment myPostsFragment;
+    private NotificationsFragment notificationsFragment;
     private AccountFragment accountFragment;
     
     // For categories dialog
@@ -67,12 +69,17 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Apply saved theme (dark / light) before inflating layout
+        com.example.madadgarapp.utils.ThemeUtils.applyTheme(this);
         setContentView(R.layout.activity_main);
         
         // Initialize views
         initViews();
         // Initialize AuthManager ViewModel
         authManager = new ViewModelProvider(this).get(AuthManager.class);
+
+        // Refresh authentication status immediately
+        authManager.refreshAuthStatus();
         
         // Setup toolbar
         setupToolbar();
@@ -87,7 +94,13 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                // If we're on any fragment other than items, go back to items
+                // First, let the fragment manager handle back stack within the container
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                    return;
+                }
+
+                // If we're on any fragment other than items (handled via bottom nav), go back to items
                 if (activeFragment != null && activeFragment != itemsFragment) {
                     switchFragment(itemsFragment, "items");
                     bottomNavigationView.setSelectedItemId(R.id.navigation_items);
@@ -106,25 +119,26 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
                 }
             }
         });
-        // Observe authentication state with delay to allow session restoration
+        
+        // Observe authentication state
         authManager.getAuthLiveData().observe(this, new Observer<AuthManager.AuthState>() {
             @Override
             public void onChanged(AuthManager.AuthState authState) {
                 if (authState instanceof AuthManager.AuthState.Unauthenticated) {
-                    // Add a small delay to ensure session restoration has been attempted
-                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                        // Double-check authentication status before navigating away
-                        if (authManager.getCurrentAuthState() instanceof AuthManager.AuthState.Unauthenticated) {
-                            // Navigate to AuthSelectionActivity if still unauthenticated
-                            Intent intent = new Intent(MainActivity.this, AuthSelectionActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
-                        }
-                    }, 2000); // 2 second delay to allow for session restoration
+                    // Navigate to AuthSelectionActivity immediately
+                    Intent intent = new Intent(MainActivity.this, AuthSelectionActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
+        
+        // Handle notification intent AFTER everything is set up
+        // Use a small delay to ensure fragments are ready
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            handleNotificationIntent(getIntent());
+        }, 100); // 100ms delay
     }
 
     private void initViews() {
@@ -180,6 +194,7 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
         if (itemsFragment == null) itemsFragment = ItemsFragment.newInstance();
         if (shareItemFragment == null) shareItemFragment = ShareItemFragment.newInstance();
         if (myPostsFragment == null) myPostsFragment = MyPostsFragment.newInstance();
+        if (notificationsFragment == null) notificationsFragment = new NotificationsFragment();
         if (accountFragment == null) accountFragment = AccountFragment.newInstance();
         
         // Initialize the fragment manager
@@ -211,12 +226,14 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             itemsFragment = (ItemsFragment) fragmentManager.findFragmentByTag("items");
             shareItemFragment = (ShareItemFragment) fragmentManager.findFragmentByTag("share_item");
             myPostsFragment = (MyPostsFragment) fragmentManager.findFragmentByTag("my_posts");
+            notificationsFragment = (NotificationsFragment) fragmentManager.findFragmentByTag("notifications");
             accountFragment = (AccountFragment) fragmentManager.findFragmentByTag("account");
             
             // If fragments weren't found (which shouldn't happen but just in case), create new instances
             if (itemsFragment == null) itemsFragment = ItemsFragment.newInstance();
             if (shareItemFragment == null) shareItemFragment = ShareItemFragment.newInstance();
             if (myPostsFragment == null) myPostsFragment = MyPostsFragment.newInstance();
+            if (notificationsFragment == null) notificationsFragment = new NotificationsFragment();
             if (accountFragment == null) accountFragment = AccountFragment.newInstance();
             
             // Set active fragment
@@ -237,6 +254,10 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
                 case "my_posts":
                     activeFragment = myPostsFragment;
                     bottomNavigationView.setSelectedItemId(R.id.navigation_my_posts);
+                    break;
+                case "notifications":
+                    activeFragment = notificationsFragment;
+                    bottomNavigationView.setSelectedItemId(R.id.navigation_notifications);
                     break;
                 case "account":
                     activeFragment = accountFragment;
@@ -274,6 +295,9 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             } else if (itemId == R.id.navigation_my_posts) {
                 switchFragment(myPostsFragment, "my_posts");
                 return true;
+            } else if (itemId == R.id.navigation_notifications) {
+                switchFragment(notificationsFragment, "notifications");
+                return true;
             } else if (itemId == R.id.navigation_account) {
                 switchFragment(accountFragment, "account");
                 return true;
@@ -298,6 +322,12 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
                 if (myPostsFragment != null && myPostsFragment.isVisible()) {
                     // You could trigger a refresh here if needed
                     Toast.makeText(this, "Refreshing My Posts", Toast.LENGTH_SHORT).show();
+                }
+            } else if (itemId == R.id.navigation_notifications) {
+                // Refresh notifications when tab is reselected
+                if (notificationsFragment != null && notificationsFragment.isVisible()) {
+                    // You could trigger a refresh here if needed
+                    Toast.makeText(this, "Refreshing Notifications", Toast.LENGTH_SHORT).show();
                 }
             } else if (itemId == R.id.navigation_account) {
                 // Refresh account when tab is reselected
@@ -428,6 +458,14 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
     }
     
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Handle new intents when app is already running (singleTop/singleTask)
+        setIntent(intent);
+        handleNotificationIntent(intent);
+    }
+    
+    @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         
@@ -444,6 +482,8 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             activeFragmentTag = "share_item";
         } else if (activeFragment == myPostsFragment) {
             activeFragmentTag = "my_posts";
+        } else if (activeFragment == notificationsFragment) {
+            activeFragmentTag = "notifications";
         } else if (activeFragment == accountFragment) {
             activeFragmentTag = "account";
         } else {
@@ -659,8 +699,10 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             return 1;
         } else if (fragment == myPostsFragment) {
             return 2;
-        } else if (fragment == accountFragment) {
+        } else if (fragment == notificationsFragment) {
             return 3;
+        } else if (fragment == accountFragment) {
+            return 4;
         }
         return 0; // Default to first position
     }
@@ -688,6 +730,130 @@ private static final String STATE_ACTIVE_FRAGMENT = "active_fragment";
             // Navigation will be handled automatically by the auth state observer
         } catch (Exception e) {
             Toast.makeText(this, "Error during logout: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Handle notification intent to open specific item or perform action
+     */
+    private void handleNotificationIntent(Intent intent) {
+        android.util.Log.d("MainActivity", "handleNotificationIntent called");
+        
+        if (intent == null) {
+            android.util.Log.d("MainActivity", "Intent is null");
+            return;
+        }
+        
+        // Log all extras for debugging
+        android.os.Bundle extras = intent.getExtras();
+        if (extras != null) {
+            android.util.Log.d("MainActivity", "Intent extras found:");
+            for (String key : extras.keySet()) {
+                Object value = extras.get(key);
+                android.util.Log.d("MainActivity", "  " + key + " = " + value);
+            }
+        } else {
+            android.util.Log.d("MainActivity", "No intent extras found");
+        }
+        
+        try {
+            boolean openedFromNotification = intent.getBooleanExtra("opened_from_notification", false);
+            android.util.Log.d("MainActivity", "openedFromNotification: " + openedFromNotification);
+            
+            if (!openedFromNotification) {
+                android.util.Log.d("MainActivity", "Not opened from notification, returning");
+                return;
+            }
+            
+            String action = intent.getStringExtra("action");
+            String notificationType = intent.getStringExtra("notification_type");
+            String itemId = intent.getStringExtra("target_item_id");
+            
+            android.util.Log.d("MainActivity", "Handling notification intent:");
+            android.util.Log.d("MainActivity", "  Action: " + action);
+            android.util.Log.d("MainActivity", "  Type: " + notificationType);
+            android.util.Log.d("MainActivity", "  Item ID: " + itemId);
+            
+            if ("open_item".equals(action)) {
+                if (itemId != null && !itemId.isEmpty()) {
+                    android.util.Log.d("MainActivity", "Opening item from notification: " + itemId);
+                    openItemFromNotification(itemId);
+                } else {
+                    android.util.Log.w("MainActivity", "No item ID found in notification intent");
+                    // Fallback: navigate to items tab
+                    navigateToItemsTab();
+                    Toast.makeText(this, "Opening app from notification", Toast.LENGTH_SHORT).show();
+                }
+            } else if ("new_listing".equals(notificationType)) {
+                // If we can't open specific item, at least navigate to items tab
+                android.util.Log.d("MainActivity", "New listing notification - navigating to items tab");
+                navigateToItemsTab();
+                Toast.makeText(this, "New item available!", Toast.LENGTH_SHORT).show();
+            } else {
+                android.util.Log.d("MainActivity", "Unhandled notification type, navigating to items tab");
+                navigateToItemsTab();
+                Toast.makeText(this, "Opening app from notification", Toast.LENGTH_SHORT).show();
+            }
+            
+            // Clear the intent extras to prevent re-processing
+            intent.removeExtra("opened_from_notification");
+            intent.removeExtra("action");
+            intent.removeExtra("target_item_id");
+            intent.removeExtra("notification_type");
+            
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error handling notification intent", e);
+            // Fallback: navigate to items tab
+            navigateToItemsTab();
+            Toast.makeText(this, "Error opening from notification", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Navigate to items tab
+     */
+    private void navigateToItemsTab() {
+        try {
+            if (bottomNavigationView != null) {
+                bottomNavigationView.setSelectedItemId(R.id.navigation_items);
+            }
+            if (itemsFragment != null) {
+                switchFragment(itemsFragment, "items");
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error navigating to items tab", e);
+        }
+    }
+    
+    /**
+     * Open specific item from notification
+     */
+    private void openItemFromNotification(String itemId) {
+        try {
+            android.util.Log.d("MainActivity", "Attempting to open item: " + itemId);
+            
+            // First, navigate to items tab to ensure we're on the right fragment
+            navigateToItemsTab();
+            
+            // Give the fragment a moment to load, then try to open the item
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    if (itemsFragment != null && itemsFragment.isAdded()) {
+                        // Try to open the specific item
+                        itemsFragment.openItemById(itemId);
+                    } else {
+                        android.util.Log.w("MainActivity", "ItemsFragment not ready to open item");
+                        Toast.makeText(this, "Opening item from notification...", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("MainActivity", "Error opening item after delay", e);
+                    Toast.makeText(this, "Could not open item from notification", Toast.LENGTH_SHORT).show();
+                }
+            }, 500); // 500ms delay to ensure fragment is ready
+            
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error in openItemFromNotification", e);
+            Toast.makeText(this, "Error opening item from notification: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 }

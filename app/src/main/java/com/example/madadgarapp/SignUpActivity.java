@@ -52,6 +52,20 @@ public class SignupActivity extends AppCompatActivity {
                 // Reset UI to normal state - this is expected after signup
                 btnSignup.setEnabled(true);
                 btnSignup.setText("Sign Up");
+            } else if (authState instanceof AuthManager.AuthState.Authenticated) {
+                // Sign up finished successfully
+                btnSignup.setEnabled(true);
+                btnSignup.setText("Sign Up");
+
+                Toast.makeText(this, "Account created successfully! Please check your email for verification.", Toast.LENGTH_LONG).show();
+
+                // Navigate to login screen after showing the toast so that the coroutine is not cancelled prematurely
+                emailInput.postDelayed(() -> {
+                    Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
+                    startActivity(intent);
+                    finish();
+                }, 2000);
+
             } else if (authState instanceof AuthManager.AuthState.Error) {
                 // Handle error state
                 AuthManager.AuthState.Error errorState = (AuthManager.AuthState.Error) authState;
@@ -99,14 +113,6 @@ public class SignupActivity extends AppCompatActivity {
         Log.d(TAG, "Attempting to sign up with email: " + email);
         authManager.signUpWithEmailPassword(email, password);
         
-        // Show success message and navigate back
-        Toast.makeText(this, "Account created successfully! Please check your email for verification.", Toast.LENGTH_LONG).show();
-        
-        // Navigate back to login after a short delay
-        emailInput.postDelayed(() -> {
-            Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }, 2000);
+
     }
 }

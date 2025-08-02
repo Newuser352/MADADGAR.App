@@ -7,6 +7,8 @@ import com.example.madadgarapp.models.NewSupabaseItem
 import com.example.madadgarapp.models.SupabaseItem
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
+import com.example.madadgarapp.services.NotificationService
+import javax.inject.Inject
 
 /**
  * Kotlin bridge for real Supabase operations
@@ -25,6 +27,7 @@ class SupabaseItemBridge : CoroutineScope {
     override val coroutineContext: CoroutineContext = Dispatchers.Main + job
     
     private val repository = ItemRepository()
+    private val notificationService = NotificationService(com.example.madadgarapp.repository.NotificationRepository())
     
     /**
      * Interface for callbacks from async operations (Java-friendly)
@@ -180,6 +183,7 @@ class SupabaseItemBridge : CoroutineScope {
      * @param contact1 Additional contact 1 (optional)
      * @param contact2 Additional contact 2 (optional)
      * @param userId Owner user ID
+     * @param ownerEmail Owner email (optional)
      * @param expiresAt Expiry date (optional, for food items)
      * @param imageUris List of image URIs to upload (optional)
      * @param videoUri Video URI to upload (optional)
@@ -198,6 +202,7 @@ class SupabaseItemBridge : CoroutineScope {
         contact1: String?,
         contact2: String?,
         userId: String,
+        ownerEmail: String?,
         expiresAt: String?,
         imageUris: List<Uri>?,
         videoUri: Uri?,
@@ -260,6 +265,7 @@ class SupabaseItemBridge : CoroutineScope {
                     contact1 = contact1,
                     contact2 = contact2,
                     ownerId = userId,
+                    ownerEmail = ownerEmail,
                     expiresAt = expiresAt,
                     imageUrls = imageUrls,
                     videoUrl = videoUrl
@@ -273,6 +279,24 @@ class SupabaseItemBridge : CoroutineScope {
                     val createdItem = itemResult.getOrNull()
                     if (createdItem != null) {
                         Log.d(TAG, "Complete item creation successful! Item ID: ${createdItem.id}")
+                        
+                        // Create notifications for other users about the new post
+                        Log.d(TAG, "Creating notifications for new post...")
+                        try {
+                            val notificationResult = notificationService.createNewPostNotifications(
+                                item = createdItem,
+                                uploaderUserId = userId
+                            )
+                            
+                            if (notificationResult.isSuccess) {
+                                Log.d(TAG, "Successfully created notifications for new post")
+                            } else {
+                                Log.w(TAG, "Failed to create notifications for new post, but item creation was successful", notificationResult.exceptionOrNull())
+                            }
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Exception creating notifications for new post, but item creation was successful", e)
+                        }
+                        
                         callback.onSuccess(createdItem)
                     } else {
                         Log.e(TAG, "Item creation returned null")
@@ -316,6 +340,43 @@ class SupabaseItemBridge : CoroutineScope {
             } catch (e: Exception) {
                 Log.e(TAG, "Exception fetching active items", e)
                 callback.onError(e.message ?: "Exception fetching items")
+            }
+        }
+    }
+    
+    /**
+     * Get active items within a bounding box (for location-based filtering)
+     */
+    fun getActiveItemsInBoundingBox(
+        minLat: Double,
+        maxLat: Double,
+        minLng: Double,
+        maxLng: Double,
+        limit: Int,
+        offset: Int,
+        callback: RepositoryCallback<List<SupabaseItem>>
+    ) {
+        Log.d(TAG, "Fetching active items in bounding box from Supabase")
+        
+        launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    repository.getActiveItemsInBoundingBox(minLat, maxLat, minLng, maxLng, limit, offset)
+                }
+                
+                if (result.isSuccess) {
+                    val items = result.getOrNull() ?: emptyList()
+                    Log.d(TAG, "Fetched ${items.size} active items in bounding box from Supabase")
+                    callback.onSuccess(items)
+                } else {
+                    val error = result.exceptionOrNull()?.message ?: "Failed to fetch active items in bounding box"
+                    Log.e(TAG, "Failed to fetch active items in bounding box: $error")
+                    callback.onError(error)
+                }
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception fetching active items in bounding box", e)
+                callback.onError(e.message ?: "Exception fetching items in bounding box")
             }
         }
     }

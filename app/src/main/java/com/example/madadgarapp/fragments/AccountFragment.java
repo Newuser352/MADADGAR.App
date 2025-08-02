@@ -41,8 +41,9 @@ public class AccountFragment extends Fragment {
     // UI Elements
     private TextView textUserName, textEmailAddress;
     private MaterialButton btnLogout;
-    private LinearLayout layoutRateUs, layoutJoinCommunity, layoutCustomerSupport, layoutShareApp, layoutReportProblem;
+    private LinearLayout layoutRateUs, layoutJoinCommunity, layoutCustomerSupport, layoutShareApp, layoutReportProblem, layoutSavedPosts;
     private ImageView imageBackArrow;
+    private com.google.android.material.switchmaterial.SwitchMaterial switchDarkMode;
 
     public AccountFragment() {
         // Required empty public constructor
@@ -67,13 +68,14 @@ public class AccountFragment extends Fragment {
         // Set up listeners
         setupListeners();
         
+        // Initialize switch state based on saved preference
+        boolean isDark = com.example.madadgarapp.utils.ThemeUtils.isDarkModeEnabled(requireContext());
+        switchDarkMode.setChecked(isDark);
+
         // Load user profile data
         loadUserProfile();
     }
 
-    /**
-     * Initialize all view references
-     */
     private void initViews(View view) {
         // Profile section
         textUserName = view.findViewById(R.id.text_user_name);
@@ -84,12 +86,16 @@ public class AccountFragment extends Fragment {
         layoutShareApp = view.findViewById(R.id.layout_share_app);
         layoutCustomerSupport = view.findViewById(R.id.layout_customer_support);
         layoutReportProblem = view.findViewById(R.id.layout_report_problem);
+        layoutSavedPosts = view.findViewById(R.id.layout_saved_posts);
 
         // Logout button
         btnLogout = view.findViewById(R.id.btn_logout);
 
         // Back arrow
         imageBackArrow = view.findViewById(R.id.image_back_arrow);
+
+        // Dark mode switch
+        switchDarkMode = view.findViewById(R.id.switch_dark_mode);
 
         // User email
         textEmailAddress = view.findViewById(R.id.text_email_address);
@@ -105,9 +111,15 @@ public class AccountFragment extends Fragment {
         layoutShareApp.setOnClickListener(v -> onShareAppClicked());
         layoutCustomerSupport.setOnClickListener(v -> onCustomerSupportClicked());
         layoutReportProblem.setOnClickListener(v -> onReportProblemClicked());
+        layoutSavedPosts.setOnClickListener(v -> onSavedPostsClicked());
         
         // Back arrow
         imageBackArrow.setOnClickListener(v -> requireActivity().onBackPressed());
+        
+        // Dark mode toggle listener
+        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            com.example.madadgarapp.utils.ThemeUtils.setDarkModeEnabled(requireContext(), isChecked);
+        });
         
         // Logout button
         btnLogout.setOnClickListener(v -> onLogoutClicked());
@@ -232,6 +244,17 @@ public class AccountFragment extends Fragment {
      * Handle REPORT PROBLEM option click
      * Opens email client to report a problem
      */
+    private void onSavedPostsClicked() {
+        // Navigate to SavedPostsFragment
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.main_fragment_container, com.example.madadgarapp.fragments.SavedPostsFragment.newInstance())
+                    .addToBackStack(null)
+                    .commit();
+        }
+    }
+
     private void onReportProblemClicked() {
         try {
             // Email details

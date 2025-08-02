@@ -72,10 +72,10 @@ public class ShareItemFragment extends Fragment {
     private VideoView videoPreview;
     private FrameLayout layoutMainMediaPreview;
     private LinearLayout layoutImagePreviews;
-    private TextInputLayout tilItemName, tilItemDescription, tilItemLocation, tilContactNumber;
-    private TextInputLayout tilContact1, tilContact2, tilItemSubcategory; // Primary and secondary contact fields
-    private TextInputEditText etItemName, etItemDescription, etItemLocation, etContactNumber;
-    private TextInputEditText etContact1, etContact2; // Primary and secondary contact EditTexts
+    private TextInputLayout tilItemName, tilItemDescription;
+    private TextInputLayout tilContactNumber, tilContact1, tilItemSubcategory; // Primary contact field
+    private TextInputEditText etItemName, etItemDescription;
+    private TextInputEditText etContactNumber, etContact1; // Primary contact EditText
     private MaterialAutoCompleteTextView dropdownSubcategory;
     private MaterialButton btnShareItem, btnUploadPhoto, btnUploadVideo, btnClearPhotos, btnClearVideo;
     private CountryCodePicker countryCodePicker;
@@ -103,6 +103,7 @@ public class ShareItemFragment extends Fragment {
     
     // Location-related variables
     private LocationUtils.Coordinates selectedCoordinates;
+    private String selectedLocation = "";
     private MaterialButton btnSelectLocation;
     
     // Location permission launcher
@@ -261,7 +262,7 @@ public class ShareItemFragment extends Fragment {
             layoutExpirySection = view.findViewById(R.id.layout_expiry_section);
             sliderExpiry = view.findViewById(R.id.slider_expiry);
             textExpiryValue = view.findViewById(R.id.text_expiry_value);
-            
+
             // Time unit selection
             radioGroupTimeUnit = view.findViewById(R.id.radio_group_time_unit);
             radioHours = view.findViewById(R.id.radio_hours);
@@ -271,29 +272,21 @@ public class ShareItemFragment extends Fragment {
             tilItemName = view.findViewById(R.id.til_item_name);
             tilItemDescription = view.findViewById(R.id.til_item_description);
             tilItemSubcategory = view.findViewById(R.id.til_item_subcategory);
-            tilItemLocation = view.findViewById(R.id.til_item_location);
+
             tilContactNumber = view.findViewById(R.id.til_contact_number);
             tilContact1 = view.findViewById(R.id.til_contact1);
-            tilContact2 = view.findViewById(R.id.til_contact2);
             
             // EditTexts
             etItemName = view.findViewById(R.id.et_item_name);
             etItemDescription = view.findViewById(R.id.et_item_description);
-            etItemLocation = view.findViewById(R.id.et_item_location);
+
             etContactNumber = view.findViewById(R.id.et_contact_number);
             etContact1 = view.findViewById(R.id.et_contact1);
-            etContact2 = view.findViewById(R.id.et_contact2);
             
             // Initialize the dropdown subcategory
             dropdownSubcategory = view.findViewById(R.id.dropdown_subcategory);
             
-            // Country Code Picker
-            countryCodePicker = view.findViewById(R.id.country_code_picker);
-            if (countryCodePicker == null) {
-                Log.e(TAG, "initViews: CountryCodePicker not found in layout");
-            } else {
-                Log.d(TAG, "initViews: CountryCodePicker successfully initialized");
-            }
+            // Country Code Picker removed from layout
             
             // Buttons
             btnShareItem = view.findViewById(R.id.btn_share_item);
@@ -304,9 +297,8 @@ public class ShareItemFragment extends Fragment {
             btnSelectLocation = view.findViewById(R.id.btn_select_location);
             
             // Verify all critical views are initialized
-            if (etContactNumber == null || tilContactNumber == null) {
-                Log.e(TAG, "initViews: Contact number views not initialized");
-            }
+            // if main phone views removed, no longer check
+            
             
             Log.d(TAG, "initViews: All views initialized successfully");
             
@@ -486,7 +478,6 @@ public class ShareItemFragment extends Fragment {
                 // Set up text change listeners for the other contact fields
                 Log.d(TAG, "setupCountryCodePicker: Setting up validation for other contact fields");
                 setupContactFieldValidation(etContact1, tilContact1, "Invalid primary contact");
-                setupContactFieldValidation(etContact2, tilContact2, "Invalid secondary contact");
                 
                 Log.d(TAG, "setupCountryCodePicker: Country code picker setup successful");
             } else {
@@ -790,35 +781,50 @@ public class ShareItemFragment extends Fragment {
         }
         
         // Validate location
-        String location = etItemLocation.getText().toString().trim();
-        if (TextUtils.isEmpty(location)) {
-            tilItemLocation.setError("Location is required");
+        if (TextUtils.isEmpty(selectedLocation)) {
+            Toast.makeText(getContext(), "Location is required", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+        
+        // Validate main contact number (required)
+        String mainContact = etContactNumber != null ? etContactNumber.getText().toString().trim() : "";
+        if (TextUtils.isEmpty(mainContact)) {
+            Log.d(TAG, "validateForm: Main contact number is empty");
+            tilContactNumber.setError("Main contact number is required");
+            isValid = false;
+        } else if (mainContact.length() < 10 || !android.util.Patterns.PHONE.matcher(mainContact).matches()) {
+            tilContactNumber.setError("Please enter a valid main contact number");
             isValid = false;
         } else {
-            tilItemLocation.setError(null);
+            tilContactNumber.setError(null);
         }
         
-        // Validate primary contact (optional but must be valid if provided)
+        // Validate primary contact (required)
         String primaryContact = etContact1 != null ? etContact1.getText().toString().trim() : "";
-        if (!primaryContact.isEmpty()) {
-            if (primaryContact.length() < 10 || !android.util.Patterns.PHONE.matcher(primaryContact).matches()) {
-                tilContact1.setError("Please enter a valid primary contact number");
+        if (TextUtils.isEmpty(primaryContact)) {
+            Log.d(TAG, "validateForm: Primary contact is empty");
+            tilContact1.setError("Primary contact number is required");
+            isValid = false;
+        } else if (primaryContact.length() < 10 || !android.util.Patterns.PHONE.matcher(primaryContact).matches()) {
+            tilContact1.setError("Please enter a valid primary contact number");
+            isValid = false;
+        } else {
+            tilContact1.setError(null);
+        }
+        
+        // Validate that both contact numbers are different
+        if (!TextUtils.isEmpty(mainContact) && !TextUtils.isEmpty(primaryContact)) {
+            // Normalize numbers for comparison (remove spaces, dashes, etc.)
+            String normalizedMain = mainContact.replaceAll("[^0-9+]", "");
+            String normalizedPrimary = primaryContact.replaceAll("[^0-9+]", "");
+            
+            if (normalizedMain.equals(normalizedPrimary)) {
+                Log.d(TAG, "validateForm: Contact numbers are the same");
+                tilContact1.setError("Primary contact must be different from main contact");
                 isValid = false;
-            } else {
-                tilContact1.setError(null);
             }
         }
         
-        // Validate secondary contact (optional but must be valid if provided)
-        String secondaryContact = etContact2 != null ? etContact2.getText().toString().trim() : "";
-        if (!secondaryContact.isEmpty()) {
-            if (secondaryContact.length() < 10 || !android.util.Patterns.PHONE.matcher(secondaryContact).matches()) {
-                tilContact2.setError("Please enter a valid secondary contact number");
-                isValid = false;
-            } else {
-                tilContact2.setError(null);
-            }
-        }
         
         Log.d(TAG, "validateForm: Form validation result: " + isValid);
         return isValid;
@@ -919,10 +925,9 @@ public class ShareItemFragment extends Fragment {
                 String itemName = etItemName.getText().toString().trim();
                 String itemDescription = etItemDescription.getText().toString().trim();
                 String subcategory = dropdownSubcategory.getText().toString().trim();
-                String location = etItemLocation.getText().toString().trim();
-                String mainContact = countryCodePicker.getFullNumber();
+                String location = selectedLocation;
+                String mainContact = (countryCodePicker != null ? safeGetFullNumber() : (etContactNumber != null && etContactNumber.getText() != null ? etContactNumber.getText().toString().trim() : ""));
                 String contact1 = etContact1.getText().toString().trim();
-                String contact2 = etContact2.getText().toString().trim();
                 
                 // Determine category
                 String mainCategory;
@@ -989,12 +994,21 @@ public class ShareItemFragment extends Fragment {
     /**
      * Submit the complete item to Supabase using the repository bridge
      */
+    private String safeGetFullNumber() {
+        try {
+            return countryCodePicker.getFullNumber();
+        } catch (Exception e) {
+            Log.w(TAG, "safeGetFullNumber: failed to get number", e);
+            return "";
+        }
+    }
+
     private void submitCompleteItem() {
         // Context must be available to proceed
         Context context = getContext();
         if (context == null) return;
 
-        // Get current user ID
+        // Get current user ID and email
         var currentUser = com.example.madadgarapp.utils.SupabaseClient.AuthHelper.INSTANCE.getCurrentUser();
         if (currentUser == null) {
             Toast.makeText(context, "Please sign in to share items", Toast.LENGTH_SHORT).show();
@@ -1002,13 +1016,19 @@ public class ShareItemFragment extends Fragment {
             return;
         }
         String userId = currentUser.getId();
+        String userEmail = currentUser.getEmail();
 
         // Get required fields
         String itemName = etItemName.getText().toString().trim();
         String itemDescription = etItemDescription.getText().toString().trim();
+        // Append expiry tag for food items
+        if (radioFood.isChecked()) {
+            String expiryTag = isHoursSelected ? ("Item expires in " + expiryHours + " hours") : ("Item expires in " + expiryDays + " days");
+            itemDescription = itemDescription + "\n" + expiryTag;
+        }
         String subcategory = dropdownSubcategory.getText().toString().trim();
-        String location = etItemLocation.getText().toString().trim();
-        String mainContact = countryCodePicker.getFullNumber();
+        String location = selectedLocation;
+        String mainContact = (countryCodePicker != null ? safeGetFullNumber() : (etContactNumber != null && etContactNumber.getText() != null ? etContactNumber.getText().toString().trim() : ""));
         String contact1 = etContact1.getText().toString().trim();
         String contact2 = etContact2.getText().toString().trim();
 
@@ -1036,17 +1056,18 @@ public class ShareItemFragment extends Fragment {
                 location,
                 selectedCoordinates != null ? selectedCoordinates.getLatitude() : null,
                 selectedCoordinates != null ? selectedCoordinates.getLongitude() : null,
-                "", // primary contact removed
+                mainContact, // primary contact
                 contact1,
-                contact2,
+                null, // secondary contact removed
                 userId,
+                userEmail,
                 expiryTime,
                 selectedPhotoUris.isEmpty() ? null : selectedPhotoUris,
                 isVideoSelected ? selectedVideoUri : null,
                 new SupabaseItemBridge.RepositoryCallback<SupabaseItem>() {
                     @Override
                     public void onSuccess(SupabaseItem result) {
-                        Toast.makeText(context, "Item successfully shared to Supabase!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Item shared", Toast.LENGTH_SHORT).show();
                         clearForm();
                         resetButtonState();
                         
@@ -1113,10 +1134,8 @@ public class ShareItemFragment extends Fragment {
             if (etItemName != null) etItemName.setText("");
             if (etItemDescription != null) etItemDescription.setText("");
             if (dropdownSubcategory != null) dropdownSubcategory.setText("");
-            if (etItemLocation != null) etItemLocation.setText("");
-            if (etContactNumber != null) etContactNumber.setText("");
+
             if (etContact1 != null) etContact1.setText("");
-            if (etContact2 != null) etContact2.setText("");
             
             // Clear location
             clearLocation();
@@ -1125,10 +1144,8 @@ public class ShareItemFragment extends Fragment {
             if (tilItemName != null) tilItemName.setError(null);
             if (tilItemDescription != null) tilItemDescription.setError(null);
             if (tilItemSubcategory != null) tilItemSubcategory.setError(null);
-            if (tilItemLocation != null) tilItemLocation.setError(null);
-            if (tilContactNumber != null) tilContactNumber.setError(null);
+
             if (tilContact1 != null) tilContact1.setError(null);
-            if (tilContact2 != null) tilContact2.setError(null);
             
             Log.d(TAG, "clearForm: Form cleared successfully");
         } catch (Exception e) {
@@ -1209,12 +1226,8 @@ public class ShareItemFragment extends Fragment {
      */
     private void handleLocationSelected(String location, LocationUtils.Coordinates coordinates) {
         try {
-            // Update the location field
-            if (etItemLocation != null) {
-                etItemLocation.setText(location);
-            }
-            
-            // Store the coordinates for later use
+            // Store location string and coordinates
+            selectedLocation = location;
             selectedCoordinates = coordinates;
             
             // Update button text to show location is selected
@@ -1238,10 +1251,7 @@ public class ShareItemFragment extends Fragment {
      */
     private void clearLocation() {
         try {
-            if (etItemLocation != null) {
-                etItemLocation.setText("");
-            }
-            
+            selectedLocation = "";
             selectedCoordinates = null;
             
             if (btnSelectLocation != null) {

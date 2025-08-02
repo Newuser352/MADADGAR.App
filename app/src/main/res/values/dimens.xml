@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Global spacings -->
+    <dimen name="margin_small">4dp</dimen>
+    <dimen name="margin_default">8dp</dimen>
+    <dimen name="margin_medium">12dp</dimen>
+    <dimen name="margin_large">16dp</dimen>
+    <dimen name="margin_xlarge">24dp</dimen>
+
+    <!-- Paddings (reuse margin values) -->
+    <dimen name="padding_small">@dimen/margin_small</dimen>
+    <dimen name="padding_default">@dimen/margin_default</dimen>
+    <dimen name="padding_medium">@dimen/margin_medium</dimen>
+    <dimen name="padding_large">@dimen/margin_large</dimen>
+
+    <!-- Component specific -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+
+    <dimen name="toolbar_margin_top">8dp</dimen>
+    <dimen name="toolbar_margin_horizontal">16dp</dimen>
+
+    <dimen name="bottom_nav_margin_horizontal">12dp</dimen>
+    <dimen name="bottom_nav_margin_bottom">12dp</dimen>
+
+    <!-- Sizes -->
+    <dimen name="image_item_size">80dp</dimen>
     <dimen name="indicator_size">8dp</dimen>
 </resources>
