@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#F5F5F5">
+    android:background="?android:attr/colorBackground">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -155,13 +155,13 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Join Community"
+                        android:text="@string/join_community"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Updates about app" />
+                        android:text="@string/join_community_description" />
                 </LinearLayout>
 
                 <ImageView
@@ -235,13 +235,13 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Customer Support"
+                        android:text="@string/customer_support"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Need Assistance?" />
+                        android:text="@string/customer_support_description" />
                 </LinearLayout>
 
                 <ImageView
@@ -351,11 +351,27 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Report problem"
+                        android:text="@string/report_problem"
                         android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/report_problem_description" />
                 </LinearLayout>
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_arrow_forward" />
             </LinearLayout>
         </LinearLayout>
+
+        <!-- Bottom spacing for better scrolling -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:layout_constraintTop_toBottomOf="@id/options_container" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

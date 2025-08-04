@@ -185,32 +185,51 @@ public class AccountFragment extends Fragment {
 
     /**
      * Handle JOIN COMMUNITY option click
-     * Opens a link to join the community platform
+     * Opens WhatsApp community link
      */
     private void onJoinCommunityClicked() {
         try {
-            // Open community URL (could be a social media group, Discord, etc.)
-            String communityUrl = "https://example.com/madadgar-community";
+            // WhatsApp community URL
+            String communityUrl = "https://chat.whatsapp.com/J3b8mS8ooGgGGcvaGpTBi2";
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(communityUrl));
             startActivity(intent);
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Could not open community link", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Could not open WhatsApp community link", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
      * Handle CUSTOMER SUPPORT option click
-     * Opens a support page or contact option
+     * Opens email client to contact customer support
      */
     private void onCustomerSupportClicked() {
-        // Implement customer support handling
         try {
-            // For example, open a support webpage
-            String supportUrl = "https://example.com/support"; // Replace with actual support URL
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(supportUrl));
-            startActivity(intent);
+            // Email details for customer support
+            String[] recipients = {"madadgarappteam@gmail.com"};
+            String subject = getString(R.string.app_name) + " - Customer Support Request";
+            String body = "Hello Madadgar Support Team,\n\n" +
+                          "I need assistance with:\n\n" +
+                          "[Please describe your issue or question here]\n\n" +
+                          "Device Information:\n" +
+                          "Android Version: " + android.os.Build.VERSION.RELEASE + "\n" +
+                          "Device Model: " + android.os.Build.MODEL + "\n\n" +
+                          "Thank you for your help!";
+            
+            // Create email intent
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+            emailIntent.setData(Uri.parse("mailto:"));
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, recipients);
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
+            emailIntent.putExtra(Intent.EXTRA_TEXT, body);
+            
+            // Verify that the intent will resolve to an activity
+            if (emailIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+                startActivity(emailIntent);
+            } else {
+                Toast.makeText(getContext(), "No email app installed", Toast.LENGTH_SHORT).show();
+            }
         } catch (Exception e) {
-            Toast.makeText(getContext(), "Could not open support", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Could not open email client", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -258,7 +277,7 @@ public class AccountFragment extends Fragment {
     private void onReportProblemClicked() {
         try {
             // Email details
-            String[] recipients = {"support@madadgarapp.com"};
+            String[] recipients = {"madadgarappteam@gmail.com"};
             String subject = getString(R.string.app_name) + " - Problem Report";
             String body = "Device Information:\n" +
                           "Android Version: " + android.os.Build.VERSION.RELEASE + "\n" +

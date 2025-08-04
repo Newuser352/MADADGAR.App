@@ -513,29 +513,30 @@
                 android:inputType="phone" />
         </com.google.android.material.textfield.TextInputLayout>
 
-
-
-        <!-- Sharing Tips Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sharing Tips"
-            android:textColor="@color/text_color"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp" />
-        
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_sharing_tips"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_contact2"
+            style="@style/Widget.App.TextInputLayout.Small"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:orientation="horizontal"
-            android:scrollbars="horizontal"
-            android:clipToPadding="false"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="1dp"
+            android:hint="Secondary Contact (Optional)"
+            app:startIconDrawable="@android:drawable/ic_menu_call"
+            app:startIconTint="@color/aston_green"
+            app:boxBackgroundColor="@color/background_light">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_contact2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:inputType="phone" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+        <!-- Bottom spacing for better scrolling -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp" />
 
     </LinearLayout>
 </ScrollView>

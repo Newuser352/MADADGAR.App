@@ -7,12 +7,13 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private static final int SPLASH_TIMEOUT = 2500; // 2.5 seconds
+    private static final int SPLASH_TIMEOUT = 3000; // 3 seconds
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,9 +29,19 @@ public class SplashActivity extends AppCompatActivity {
         // Find the content container to animate
         LinearLayout splashContent = findViewById(R.id.splash_content);
 
-        // Load and apply the fade-in animation
-        Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
-        splashContent.startAnimation(fadeIn);
+        // Load animations from resources
+        Animation scaleIn = AnimationUtils.loadAnimation(this, R.anim.splash_logo_scale);
+        Animation slideUp = AnimationUtils.loadAnimation(this, R.anim.splash_tagline_slide);
+        Animation pulse = AnimationUtils.loadAnimation(this, R.anim.splash_pulse);
+        
+        // Find app name and tagline TextViews
+        TextView appName = findViewById(R.id.tv_app_name);
+        TextView tagline = findViewById(R.id.tv_app_tagline);
+
+        // Start animations
+        appName.startAnimation(scaleIn);
+        tagline.startAnimation(slideUp);
+        splashContent.startAnimation(pulse);
 
         // Create a handler to delay the transition to the login screen
         new Handler().postDelayed(new Runnable() {

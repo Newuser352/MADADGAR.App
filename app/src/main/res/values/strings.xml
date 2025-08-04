@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MADADGAR App</string>
+    <string name="app_name">Madadgar</string>
     
     <!-- Login and Signup Strings -->
     <string name="login">Login</string>
@@ -76,6 +76,12 @@
     
     <!-- Account -->
     <string name="edit_profile">Edit Profile</string>
+    <string name="report_problem">Report Problem</string>
+    <string name="report_problem_description">Report issues or bugs</string>
+    <string name="join_community">Join Community</string>
+    <string name="join_community_description">Join our WhatsApp community</string>
+    <string name="customer_support">Customer Support</string>
+    <string name="customer_support_description">Get help and assistance</string>
     
     <!-- Additional strings for fragments -->
     <string name="search_categories">Search categories</string>
@@ -146,7 +152,7 @@
     <string name="google_play_services_unavailable">Google Play services is not available</string>
     
     <!-- Auth Selection Activity -->
-    <string name="welcome_to_app">Welcome to MADADGAR</string>
+    <string name="welcome_to_app">Welcome to Madadgar</string>
     <string name="choose_login_method">Choose how you\'d like to get started</string>
     <string name="continue_with_email">Continue with Email</string>
     <string name="terms_and_privacy">By continuing, you agree to our Terms of Service and Privacy Policy</string>

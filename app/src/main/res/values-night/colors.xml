@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark Mode Colors -->
+    
+    <!-- Background Colors -->
+    <color name="background_light">#121212</color>         <!-- Dark background -->
+    <color name="background_white">#1E1E1E</color>         <!-- Dark surface -->
+    <color name="surface">#1E1E1E</color>                  <!-- Dark surface -->
+    <color name="surface_variant">#2C2C2C</color>          <!-- Darker surface variant -->
+    <color name="background_accent">#2C2C2C</color>        <!-- Dark accent background -->
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#FFFFFF</color>             <!-- White text -->
+    <color name="text_secondary">#CCCCCC</color>           <!-- Light gray text -->
+    <color name="text_hint">#999999</color>                <!-- Darker hint text -->
+    <color name="text_color">#FFFFFF</color>               <!-- White text -->
+    <color name="hint_color">#999999</color>               <!-- Dark hint color -->
+    
+    <!-- Border & Divider Colors -->
+    <color name="divider_color">#404040</color>            <!-- Dark border -->
+    <color name="outline">#666666</color>                  <!-- Dark outline -->
+    
+    <!-- Navigation Colors -->
+    <color name="bottom_nav_background">#1E1E1E</color>    <!-- Dark nav background -->
+    <color name="bottom_nav_surface">#1E1E1E</color>       <!-- Dark nav surface -->
+    <color name="bottom_nav_icon_unselected">#999999</color>
+    <color name="bottom_nav_text_unselected">#999999</color>
+    <color name="bottom_nav_indicator">#2C4A47</color>     <!-- Dark indicator -->
+    
+    <!-- Keep primary colors the same for consistency -->
+    <color name="aston_green">#00A693</color>              <!-- Slightly brighter green for dark mode -->
+    <color name="accent_color">#00BFA5</color>             <!-- Brighter accent -->
+    <color name="light_accent">#4DB6AC</color>             <!-- Adjusted light accent -->
+    
+    <!-- Gray scale adjustments for dark mode -->
+    <color name="gray_light">#2C2C2C</color>
+    <color name="light_gray">#2C2C2C</color>
+    <color name="gray_50">#1E1E1E</color>
+    <color name="gray_100">#2C2C2C</color>
+    <color name="gray_200">#404040</color>
+    <color name="gray_300">#666666</color>
+    
+</resources>

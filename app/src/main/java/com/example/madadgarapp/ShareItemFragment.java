@@ -73,8 +73,8 @@ public class ShareItemFragment extends Fragment {
     private FrameLayout layoutMainMediaPreview;
     private LinearLayout layoutImagePreviews;
     private TextInputLayout tilItemName, tilItemDescription;
-    private TextInputLayout tilContactNumber, tilContact1, tilItemSubcategory; // Primary contact field
-    private TextInputEditText etItemName, etItemDescription;
+    private TextInputLayout tilContactNumber, tilContact1, tilContact2, tilItemSubcategory; // Primary contact field
+    private TextInputEditText etItemName, etItemDescription, etContact2;
     private TextInputEditText etContactNumber, etContact1; // Primary contact EditText
     private MaterialAutoCompleteTextView dropdownSubcategory;
     private MaterialButton btnShareItem, btnUploadPhoto, btnUploadVideo, btnClearPhotos, btnClearVideo;
@@ -108,6 +108,12 @@ public class ShareItemFragment extends Fragment {
     
     // Location permission launcher
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
+    
+    // Storage permission launchers
+    private ActivityResultLauncher<String[]> storagePermissionLauncher;
+    
+    // Pending action after permission is granted
+    private Runnable pendingMediaAction;
 
     public ShareItemFragment() {
         // Required empty public constructor
@@ -132,6 +138,9 @@ public class ShareItemFragment extends Fragment {
         try {
             // Initialize location permission launcher
             initLocationPermissionLauncher();
+            
+            // Initialize storage permission launcher
+            initStoragePermissionLauncher();
             
             // Initialize views
             initViews(view);
@@ -275,6 +284,7 @@ public class ShareItemFragment extends Fragment {
 
             tilContactNumber = view.findViewById(R.id.til_contact_number);
             tilContact1 = view.findViewById(R.id.til_contact1);
+        tilContact2 = view.findViewById(R.id.til_contact2);
             
             // EditTexts
             etItemName = view.findViewById(R.id.et_item_name);
@@ -282,6 +292,7 @@ public class ShareItemFragment extends Fragment {
 
             etContactNumber = view.findViewById(R.id.et_contact_number);
             etContact1 = view.findViewById(R.id.et_contact1);
+        etContact2 = view.findViewById(R.id.et_contact2);
             
             // Initialize the dropdown subcategory
             dropdownSubcategory = view.findViewById(R.id.dropdown_subcategory);
@@ -365,7 +376,7 @@ public class ShareItemFragment extends Fragment {
         // Photo upload button
         btnUploadPhoto.setOnClickListener(v -> {
             if (isAdded() && selectedPhotoUris.size() < MAX_PHOTO_COUNT) {
-                openMultipleImagePicker();
+                checkAndRequestPhotoPermissions();
             } else {
                 Toast.makeText(getContext(), "Maximum " + MAX_PHOTO_COUNT + " photos allowed", Toast.LENGTH_SHORT).show();
             }
@@ -374,7 +385,7 @@ public class ShareItemFragment extends Fragment {
         // Video upload button
         btnUploadVideo.setOnClickListener(v -> {
             if (isAdded()) {
-                openVideoPicker();
+                checkAndRequestVideoPermissions();
             }
         });
         
@@ -1193,6 +1204,155 @@ public class ShareItemFragment extends Fragment {
                 result -> {
                     // Permissions result handled here if needed in future
                 });
+    }
+    
+    /**
+     * Initialize storage permission launcher
+     */
+    private void initStoragePermissionLauncher() {
+        storagePermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    boolean allGranted = true;
+                    for (Boolean granted : result.values()) {
+                        if (!granted) {
+                            allGranted = false;
+                            break;
+                        }
+                    }
+                    
+                    if (allGranted) {
+                        Log.d(TAG, "Storage permissions granted");
+                        // Permissions granted, execute pending action if any
+                        if (pendingMediaAction != null) {
+                            pendingMediaAction.run();
+                            pendingMediaAction = null;
+                        }
+                    } else {
+                        Log.w(TAG, "Storage permissions denied");
+                        Toast.makeText(getContext(), "Storage permission is required to access photos and videos", Toast.LENGTH_LONG).show();
+                        pendingMediaAction = null; // Clear pending action
+                    }
+                }
+        );
+    }
+    
+    /**
+     * Check and request permissions for accessing photos
+     */
+    private void checkAndRequestPhotoPermissions() {
+        if (getContext() == null) {
+            return;
+        }
+        
+        // Set pending action to open image picker
+        pendingMediaAction = this::openMultipleImagePicker;
+        
+        // For Android 13+ (API 33+), use READ_MEDIA_IMAGES permission
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            String permission = Manifest.permission.READ_MEDIA_IMAGES;
+            
+            if (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+                // Permission already granted, open picker directly
+                openMultipleImagePicker();
+                pendingMediaAction = null;
+            } else {
+                Log.d(TAG, "Requesting READ_MEDIA_IMAGES permission for Android 13+");
+                storagePermissionLauncher.launch(new String[]{permission});
+            }
+        } else {
+            // For Android 12 and below, use READ_EXTERNAL_STORAGE
+            String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            
+            if (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+                // Permission already granted, open picker directly
+                openMultipleImagePicker();
+                pendingMediaAction = null;
+            } else {
+                Log.d(TAG, "Requesting READ_EXTERNAL_STORAGE permission for photos");
+                storagePermissionLauncher.launch(new String[]{permission});
+            }
+        }
+    }
+    
+    /**
+     * Check and request permissions for accessing videos
+     */
+    private void checkAndRequestVideoPermissions() {
+        if (getContext() == null) {
+            return;
+        }
+        
+        // Set pending action to open video picker
+        pendingMediaAction = this::openVideoPicker;
+        
+        // For Android 13+ (API 33+), use READ_MEDIA_VIDEO permission
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            String permission = Manifest.permission.READ_MEDIA_VIDEO;
+            
+            if (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+                // Permission already granted, open picker directly
+                openVideoPicker();
+                pendingMediaAction = null;
+            } else {
+                Log.d(TAG, "Requesting READ_MEDIA_VIDEO permission for Android 13+");
+                storagePermissionLauncher.launch(new String[]{permission});
+            }
+        } else {
+            // For Android 12 and below, use READ_EXTERNAL_STORAGE
+            String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            
+            if (ContextCompat.checkSelfPermission(getContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+                // Permission already granted, open picker directly
+                openVideoPicker();
+                pendingMediaAction = null;
+            } else {
+                Log.d(TAG, "Requesting READ_EXTERNAL_STORAGE permission for videos");
+                storagePermissionLauncher.launch(new String[]{permission});
+            }
+        }
+    }
+    
+    /**
+     * Check and request storage permissions based on Android version
+     */
+    private boolean checkAndRequestStoragePermissions() {
+        if (getContext() == null) {
+            return false;
+        }
+        
+        // For Android 13+ (API 33+), use granular media permissions
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            String[] permissions = {
+                Manifest.permission.READ_MEDIA_IMAGES,
+                Manifest.permission.READ_MEDIA_VIDEO
+            };
+            
+            boolean allPermissionsGranted = true;
+            for (String permission : permissions) {
+                if (ContextCompat.checkSelfPermission(getContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                    allPermissionsGranted = false;
+                    break;
+                }
+            }
+            
+            if (!allPermissionsGranted) {
+                Log.d(TAG, "Requesting media permissions for Android 13+");
+                storagePermissionLauncher.launch(permissions);
+                return false;
+            }
+        } else {
+            // For Android 12 and below, use READ_EXTERNAL_STORAGE
+            String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            
+            if (ContextCompat.checkSelfPermission(getContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Requesting storage permission for Android 12 and below");
+                storagePermissionLauncher.launch(new String[]{permission});
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     private void openLocationPicker() {

@@ -24,6 +24,8 @@ public class SignupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Apply saved theme (dark / light) before inflating layout
+        com.example.madadgarapp.utils.ThemeUtils.applyTheme(this);
         setContentView(R.layout.activity_signup);
 
         initViews();
