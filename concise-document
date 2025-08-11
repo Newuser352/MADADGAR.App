@@ -1,0 +1,78 @@
+MADADGARApp – Concise Documentation
+
+Overview
+- Purpose: Community sharing app for posting and browsing items (food and non-food), with auto-expiry for perishable items and push notifications for updates.
+- Platform: Android (minSdk 23, target/compile SDK 35)
+- Entry points: MADADGARApplication initializes Supabase, notifications, and expiry scheduling; SplashActivity is launcher; MainActivity hosts the main UI.
+
+Key Features
+- Auth: Supabase GoTrue; Google Sign-In via Credentials + Play Services; deep links for email verification and OAuth callbacks.
+- Items: Create posts with images/videos (Supabase Storage); browse active items; item details; My Posts; Saved/Favorites; category picker dialog (Food/Non-Food).
+- Notifications: Firebase Cloud Messaging; device token management; in-app notification list and delete; tap to deep-open items.
+- Expiry: Food items auto-expire via scheduled background work/service.
+- Location: Utilities and client-side bounding-box filtering for nearby items.
+
+Tech Stack
+- Languages: Kotlin + Java
+- DI: Hilt
+- Backend SDK: Supabase (postgrest, gotrue, realtime, storage) + Ktor client, Kotlinx Serialization, Coroutines
+- UI: AndroidX fragments/lifecycle, Material, ConstraintLayout, viewBinding, Glide
+- Background: WorkManager, Job/Service for expiry; FCM for push
+- Testing: JUnit, AndroidX test, Espresso (fragment-testing in debug)
+
+Architecture (High-Level)
+- Application: MADADGARApplication (@HiltAndroidApp) calls:
+  - SupabaseClient.initialize()
+  - NotificationManager.initializeNotificationChannels(context)
+  - FoodExpiryScheduler.scheduleExpiryJob(context)
+- Main Activity + Tabs: BottomNavigation with fragments
+  - ItemsFragment (default), ShareItemFragment, MyPostsFragment, NotificationsFragment, AccountFragment
+  - Reselection on Items shows a Category dialog (Food vs Non-Food subcategories)
+- Repositories
+  - ItemRepository: Upload media to Storage; create/read/update (soft delete) items; client-side filtering and pagination
+  - NotificationRepository: Fetch unread/all; delete; markRead placeholder; device token upsert with duplicate-key resilience
+- Services/Workers
+  - FCMService: Receives messages and token changes; delegates to Notification/Token managers
+  - NotificationService: Builds and displays notifications
+  - FoodItemExpiryService + FoodExpiryScheduler: Periodic cleanup of expired items
+- Utilities
+  - AuthManager (LiveData-based auth state + sign out)
+  - SupabaseClient (SDK bootstrap)
+  - NotificationManager, FCMTokenManager, LocationUtils, MediaUtils, ThemeUtils, TimeUtils, FavoriteManager
+
+Important Manifest Declarations
+- Permissions: INTERNET, ACCESS_NETWORK_STATE, RECEIVE_BOOT_COMPLETED, ACCESS_FINE/COARSE_LOCATION, POST_NOTIFICATIONS, VIBRATE, WAKE_LOCK, READ_EXTERNAL_STORAGE (maxSdk 32), READ_MEDIA_IMAGES/VIDEO
+- Deep links: https://crsqhxztqbfguylrgcnt.supabase.co/auth/v1/(verify|callback) routed to MainActivity
+- Services: .services.FCMService (com.google.firebase.MESSAGING_EVENT), .services.FoodItemExpiryService
+
+Runtime Flows
+- Launch: SplashActivity → MainActivity; AuthManager refreshes state; unauthenticated users redirected to AuthSelection
+- Create Item: ShareItemFragment → upload media (Storage) → insert item (Postgrest) → MainActivity.refreshItemsList()
+- Notification Tap: MainActivity receives extras opened_from_notification + action=open_item + target_item_id → navigate to Items → itemsFragment.openItemById(id)
+- Expiry: Scheduler triggers service to set is_active=false for expired items; UI only shows active
+
+Build & Run
+- Requirements: Android Studio (SDK 35), JDK 17
+- Firebase: google-services.json in app/
+- Supabase: Configure Supabase URL/key in SupabaseClient (avoid hardcoding secrets in source control)
+- Build: Gradle sync; assemble debug/release (R8 enabled for release)
+- Run: On device/emulator (API 23+); grant runtime permissions (media, location, notifications)
+
+Repository Structure (Core)
+- app/src/main/java/com/example/madadgarapp/
+  - MADADGARApplication.kt, MainActivity.java, Splash/Login/Signup/Auth selection activities, Web/OAuth activities
+  - fragments/: Items, ShareItem, MyPosts, Notifications, Account, SavedPosts, Categories, LocationPicker
+  - adapters/: ItemAdapter, MediaAdapter, MyPostsAdapter, NotificationAdapter
+  - repository/: ItemRepository, NotificationRepository (+ bridges)
+  - models/: SupabaseItem, Item, SupabaseNotification, Notification models
+  - services/: FCMService, NotificationService, FoodItemExpiryService
+  - utils/: SupabaseClient, AuthManager, NotificationManager, FCMTokenManager, LocationUtils, MediaUtils, ThemeUtils, TimeUtils, FavoriteManager
+- res/layout/: Activities, fragments, item cells, dialogs (dialog_categories)
+- supabase_edge_function_send_push_notifications.ts
+
+Notes & Next Steps
+- Move client-side filters to Postgrest queries with proper RLS policies (markRead, removeDeviceToken, scoped selects)
+- Wire category selections to actual item queries
+- Add paging and robust error UI states
+- Review background cadence for battery/network friendliness
+
